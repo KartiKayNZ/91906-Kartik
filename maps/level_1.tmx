@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.9" tiledversion="1.9.2" orientation="orthogonal" renderorder="right-down" width="30" height="30" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="1">
+ <tileset firstgid="1" source="TopDownTilesKennyS.tsx"/>
+ <tileset firstgid="133" source="sampleSheet.tsx"/>
+ <layer id="1" name="Background" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJwzZGBgMBxgrD0I3EDIPYTcuJOBIWExkN4OxTuAGManpfuA5idsBdLYMC3Dmxx7qYEHm73bGBgWkBrOpIT/SiBehQWvpqLfBlv+o5c/iFEPind6hpk2AXtpjQe7vfjCHV0OVCZDy+MGIPsBNr3U9C9y3EHLhwYg+wG9wpke9m7HgslRQ6KdCrRMe0PdXmqVRbjspcR8YyIwLcNyuNRt9A4PcsONFH1DKW7o4VZq2EGpGQCA2d0q
+  </data>
+ </layer>
+ <layer id="4" name="Tracks" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJxjYBgFAwlODJC910btHdb2PgLi01jwmQFyz0CFw8kBsncUjIJRMApGwSgYBaNgqAAAsHwLZQ==
+  </data>
+ </layer>
+ <layer id="2" name="Walls" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJztlUsOwiAURTGONboMt2AcuDQmWj8DY9PWoYnzrkBtGLgwLxESJLQgPhKbeJMTPqW98CgPxmhVgDXIwF6VmdXeEHtq3xzU4KTKi9UuIr77CPT1jaFWX31vVrstvnZ/jK9v70JUgipgDLUaIALGhOhq1O9Rs+m/tuDcDneBd/i3vvKfXLXDXRQJfHVOVnDJ+gPf0LNk+h4ZW+qcfHjBUefo43gmUq7XlSvyBHGWZ9+841y5olLx1pQEvvLs1wbCMUaoeGsaAl9qec4l2yXynYCBxciojxP5TsGwA99dE6s5mHWwSORLJYq7nEoUc/ml9fRRVPH778O7npn9b44=
+  </data>
+ </layer>
+ <layer id="6" name="Health Pot" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJztziEBAAAIA7D3T4ykwxGYLcESuJnvAAAAUFl8VQD5
+  </data>
+ </layer>
+ <layer id="5" name="Doors" width="30" height="30">
+  <data encoding="base64" compression="zlib">
+   eJztzjENAAAIwDD82wGBIICX8LTJ/kUAwJ2c6nsCAFg1yG4BaA==
+  </data>
+ </layer>
+</map>

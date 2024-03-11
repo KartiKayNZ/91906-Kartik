@@ -8,11 +8,13 @@ import time
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 SCREEN_TITLE = "Platformer"
+
+# The position where the player starts
 PLAYER_START_X = 40
 PLAYER_START_Y = 100
 
 # Constants used to scale our sprites from their original size
-CHARACTER_SCALING = 1
+CHARACTER_SCALING = 0.1
 TILE_SCALING = 0.5
 
 # Movement speed of player, in pixels per frame
@@ -20,6 +22,14 @@ PLAYER_MOVEMENT_SPEED = 5
 GRAVITY = 1
 PLAYER_JUMP_SPEED = 20
 DASH_MULTIPLIER = 4
+
+# Layer names from the tiled map
+LAYER_NAME_WALLS = "Walls"
+LAYER_NAME_HEALTH_POT = "Health Pot"
+LAYER_NAME_TRACKS = "Tracks"
+LAYER_NAME_BACKGROUND = "Background"
+LAYER_NAME_DOORS = "Doors"
+
 
 
 class MyGame(arcade.Window):
@@ -54,9 +64,30 @@ class MyGame(arcade.Window):
         # Set up the Camera
         self.camera = arcade.Camera(self.width, self.height)
 
+        # Name of map file to load
+        map_name = "maps/level_1.tmx"
 
-        # Initialize Scene
-        self.scene = arcade.Scene()
+        # Layer specific options are defined based on Layer names in a dictionary
+        # Doing this will make the SpriteList for the platforms layer
+        # use spatial hashing for detection.
+        layer_options = {
+            LAYER_NAME_WALLS: {
+                "use_spatial_hash": True,
+            },
+            LAYER_NAME_HEALTH_POT: {
+                "use_spatial_hash": True,
+            },
+            LAYER_NAME_DOORS:{
+                "use_spatial_hash": True,
+            },
+        }
+
+        # Read in the tiled map
+        self.tile_map = arcade.load_tilemap(map_name, TILE_SCALING, layer_options)
+
+        # Initialize Scene with our TileMap, this will automatically add all layers
+        # from the map as SpriteLists in the scene in the proper order.
+        self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
         # Create the Sprite lists
         self.scene.add_sprite_list("Player")
@@ -69,6 +100,11 @@ class MyGame(arcade.Window):
         self.player_sprite.center_y = 96
         self.scene.add_sprite("Player", self.player_sprite)
         
+        # Create the 'physics engine'
+        # Set the background color
+        if self.tile_map.background_color:
+            arcade.set_background_color(self.tile_map.background_color)
+
         # Create the 'physics engine'
         self.physics_engine = arcade.PhysicsEngineSimple(
             self.player_sprite, walls=self.scene["Walls"]
