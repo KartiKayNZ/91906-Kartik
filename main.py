@@ -5,8 +5,8 @@ import arcade
 import time
 
 # Constants
-SCREEN_WIDTH = 1280
-SCREEN_HEIGHT = 720
+SCREEN_WIDTH = 240
+SCREEN_HEIGHT = 240
 SCREEN_TITLE = "Platformer"
 
 # The position where the player starts
@@ -18,7 +18,8 @@ CHARACTER_SCALING = 0.1
 TILE_SCALING = 0.5
 
 # Movement speed of player, in pixels per frame
-PLAYER_MOVEMENT_SPEED = 5
+PLAYER_MOVEMENT_SPEED = 0.5
+PLAYER_DASH_SPEED = 20
 GRAVITY = 1
 PLAYER_JUMP_SPEED = 20
 DASH_MULTIPLIER = 4
@@ -29,6 +30,9 @@ LAYER_NAME_HEALTH_POT = "Health Pot"
 LAYER_NAME_TRACKS = "Tracks"
 LAYER_NAME_BACKGROUND = "Background"
 LAYER_NAME_DOORS = "Doors"
+
+# Direction List
+direction = [0, 0]
 
 
 
@@ -54,7 +58,21 @@ class MyGame(arcade.Window):
         # A Camera that can be used for scrolling the screen
         self.camera = None
 
+        self.dashing = None
+        
+        self.dashtime = 10
+        
+        # Do we need to reset the score?
+        self.reset_score = True
 
+        # Keep track of the score
+        self.score = 0
+        
+        self.up_pressed = None
+        self.down_pressed = None
+        self.left_pressed = None
+        self.right_pressed = None
+        
         arcade.set_background_color(arcade.csscolor.CORNFLOWER_BLUE)
 
     def setup(self):
@@ -62,7 +80,7 @@ class MyGame(arcade.Window):
 
 
         # Set up the Camera
-        self.camera = arcade.Camera(self.width, self.height)
+        self.camera = arcade.Camera(50, 50)
 
         # Name of map file to load
         map_name = "maps/level_1.tmx"
@@ -91,7 +109,6 @@ class MyGame(arcade.Window):
 
         # Create the Sprite lists
         self.scene.add_sprite_list("Player")
-        self.scene.add_sprite_list("Walls", use_spatial_hash=True)
 
         # Set up the player, specifically placing it at these coordinates.
         image_source = ":resources:images/animated_characters/female_adventurer/femaleAdventurer_idle.png"
@@ -122,42 +139,68 @@ class MyGame(arcade.Window):
         # Draw our Scene
         self.scene.draw()
 
-    def on_key_press(self, key, modifiers):
-        """Called whenever a key is pressed."""
+    def update_player_speed(self):
+        if self.up_pressed and not self.down_pressed:
+            self.player_sprite.change_y = PLAYER_MOVEMENT_SPEED
+            direction[0] = 1
+        elif self.down_pressed and not self.up_pressed:
+            self.player_sprite.change_y = -PLAYER_MOVEMENT_SPEED
+            direction[0] = -1
+        if self.left_pressed and not self.right_pressed:
+            self.player_sprite.change_x = -PLAYER_MOVEMENT_SPEED
+            direction[1] = -1
+        elif self.right_pressed and not self.left_pressed:
+            self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
+            direction[1] = 1
 
-        if key == arcade.key.UP or key == arcade.key.W:
-            self.player_sprite.change_y += PLAYER_MOVEMENT_SPEED
-    
-        elif key == arcade.key.LEFT or key == arcade.key.A:
-            self.player_sprite.change_x += -PLAYER_MOVEMENT_SPEED
+        if self.right_pressed and self.left_pressed:
+            self.player_sprite.change_x = 0
+            direction[1] = 0
+        if self.up_pressed and self.down_pressed:
+            self.player_sprite.change_y = 0
+            direction[0] = 0
             
-        elif key == arcade.key.RIGHT or key == arcade.key.D:
-            self.player_sprite.change_x += PLAYER_MOVEMENT_SPEED
+        if not self.right_pressed and not self.left_pressed:
+            self.player_sprite.change_x = 0
+            direction[1] = 0
+        if not self.up_pressed and not self.down_pressed:
+            self.player_sprite.change_y = 0
+            direction[0] = 0
+
+    def on_key_press(self, key, modifiers):
+        """When a key is pressed/held down."""
+
+        if key == arcade.key.SPACE:
+            self.dashing = True
             
-        elif key == arcade.key.SPACE: 
-            self.player_sprite.change_x += PLAYER_MOVEMENT_SPEED*DASH_MULTIPLIER
-            
+        if key == arcade.key.W: 
+            self.up_pressed = True
+            self.update_player_speed()
         elif key == arcade.key.S:
-            self.player_sprite.change_y += -PLAYER_MOVEMENT_SPEED
+            self.down_pressed = True
+            self.update_player_speed()
+        elif key == arcade.key.D:
+            self.right_pressed = True
+            self.update_player_speed()
+        elif key == arcade.key.A:
+            self.left_pressed = True
+            self.update_player_speed()
 
     def on_key_release(self, key, modifiers):
-        """Called when the user releases a key."""
+        """When a held key is released."""
 
-        if key == arcade.key.LEFT or key == arcade.key.A:
-            self.player_sprite.change_x -= -PLAYER_MOVEMENT_SPEED
-            
-        elif key == arcade.key.RIGHT or key == arcade.key.D:
-            self.player_sprite.change_x -= PLAYER_MOVEMENT_SPEED
-            
-        elif key == arcade.key.SPACE:
-            self.player_sprite.change_x -= PLAYER_MOVEMENT_SPEED*DASH_MULTIPLIER
-            
-        elif key == arcade.key.W:
-            self.player_sprite.change_y -= PLAYER_MOVEMENT_SPEED      
-        
+        if key == arcade.key.W:
+            self.up_pressed = False
+            self.update_player_speed()
         elif key == arcade.key.S:
-            self.player_sprite.change_y -= -PLAYER_MOVEMENT_SPEED  
-
+            self.down_pressed = False
+            self.update_player_speed()
+        elif key == arcade.key.D:
+            self.right_pressed = False
+            self.update_player_speed()
+        elif key == arcade.key.A:
+            self.left_pressed = False
+            self.update_player_speed()
 
     def center_camera_to_player(self):
         screen_center_x = self.player_sprite.center_x - (self.camera.viewport_width / 2)
@@ -180,11 +223,45 @@ class MyGame(arcade.Window):
     def on_update(self, delta_time):
         """Movement and game logic"""
 
+        if self.dashing == True:
+            self.player_sprite.change_y = PLAYER_DASH_SPEED * direction[1]
+            self.player_sprite.change_x = PLAYER_DASH_SPEED * direction[0]
+            self.dashtime += 1
+            if self.dashtime == 10:
+                self.dashing = False
+                self.dash_start = 0
+                if self.dashing == True:
+                    self.player_sprite.change_y = PLAYER_MOVEMENT_SPEED * direction [0]
+                    self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED * direction [1]
+            
+        
         # Move the player with the physics engine
         self.physics_engine.update()
 
         # Position the camera
         self.center_camera_to_player()
+        
+        pot_hit_list = arcade.check_for_collision_with_list(
+            self.player_sprite, self.scene["Health Pot"]
+        )
+
+        # Loop through each coin we hit (if any) and remove it
+        for pot in pot_hit_list:
+    
+            # Figure out how many points this coin is worth
+            if "Points" not in pot.properties:
+                print("Warning, collected a coin without a Points property.")
+            else:
+                health = int(pot.properties["Health"])
+                self.health += health
+
+            # Remove the coin
+            pot.remove_from_sprite_lists()
+            
+            
+            '''#ADD A HEAL NOISE!!!!!!!!!!!!!!'''
+            
+            #arcade.play_sound(self.heal_noise)
 
 
 

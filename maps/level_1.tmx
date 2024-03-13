@@ -18,6 +18,9 @@
   </data>
  </layer>
  <layer id="6" name="Health Pot" width="30" height="30">
+  <properties>
+   <property name="Health" type="int" value="25"/>
+  </properties>
   <data encoding="base64" compression="zlib">
    eJztziEBAAAIA7D3T4ykwxGYLcESuJnvAAAAUFl8VQD5
   </data>
