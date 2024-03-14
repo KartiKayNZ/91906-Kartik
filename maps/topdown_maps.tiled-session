@@ -9,17 +9,32 @@
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
+        "//wbfp02.westlake.local/shomes/kr20366/Downloads/Python Arcade/pyArcade/realPyArcade/MAPPLEASE1.tmx": {
+            "scale": 0.6194791666666667,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 961.2914074323188,
+                "y": 639.246678997814
+            }
+        },
+        "//wbfp02.westlake.local/shomes/kr20366/Downloads/Python Arcade/pyArcade/realPyArcade/MAPPLEASE1.tmx#Tiles testing": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1
+        },
         "TopDownTilesKennyS.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 2,
             "scaleInEditor": 4
+        },
+        "items.tsx": {
+            "dynamicWrapping": true
         },
         "level_1.tmx": {
             "scale": 1.7792708333333331,
             "selectedLayer": 1,
             "viewCenter": {
                 "x": 191.37052865757272,
-                "y": 247.85434108073304
+                "y": 248.41636906504306
             }
         },
         "level_1_big.tmx": {
@@ -57,7 +72,7 @@
         "sampleMap.tmx"
     ],
     "project": "topdown_maps.tiled-project",
-    "property.type": "bool",
+    "property.type": "int",
     "recentFiles": [
         "sampleSheet.tsx",
         "TopDownTilesKennyS.tsx",

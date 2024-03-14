@@ -31,6 +31,7 @@ LAYER_NAME_HEALTH_POT = "Health Pot"
 LAYER_NAME_TRACKS = "Tracks"
 LAYER_NAME_BACKGROUND = "Background"
 LAYER_NAME_DOORS = "Doors"
+LAYER_NAME_ENEMIES = "Enemies"
 
 # Direction List
 direction = [0, 0]
@@ -69,10 +70,31 @@ class MyGame(arcade.Window):
         # Keep track of the score
         self.score = 0
         
+        # Keeps track of the player's health
+        self.health = 100
+        
         self.up_pressed = None
         self.down_pressed = None
         self.left_pressed = None
         self.right_pressed = None
+
+        score_text = f"Score: {self.score}"
+        arcade.draw_text(
+            score_text,
+            10,
+            10,
+            arcade.csscolor.WHITE,
+            18,
+        )
+        
+        score_text = f"Health: {self.health}"
+        arcade.draw_text(
+            score_text,
+            10,
+            10,
+            arcade.csscolor.WHITE,
+            18,
+        )
         
         arcade.set_background_color((234, 165, 108))
 
@@ -129,6 +151,8 @@ class MyGame(arcade.Window):
             self.player_sprite, walls=self.scene["Walls"]
         )
 
+        
+        
     def on_draw(self):
         """Render the screen."""
 
@@ -140,6 +164,24 @@ class MyGame(arcade.Window):
 
         # Draw our Scene
         self.scene.draw()
+        
+        score_text = f"Score: {self.score}"
+        arcade.draw_text(
+            score_text,
+            10,
+            680,
+            arcade.csscolor.WHITE,
+            18,
+        )
+        
+        score_text = f"Health: {self.health}"
+        arcade.draw_text(
+            score_text,
+            10,
+            700,
+            arcade.csscolor.WHITE,
+            18,
+        )
 
     def update_player_speed(self):
         if self.up_pressed and not self.down_pressed:
@@ -256,11 +298,12 @@ class MyGame(arcade.Window):
         for pot in pot_hit_list:
     
             # Figure out how many points this coin is worth
-            if "Points" not in pot.properties:
+            if "health" not in pot.properties:
                 print("Warning, collected a coin without a Points property.")
             else:
-                health = int(pot.properties["Health"])
+                health = int(pot.properties["health"])
                 self.health += health
+                print(self.health)
 
             # Remove the coin
             pot.remove_from_sprite_lists()
@@ -278,6 +321,8 @@ class MyGame(arcade.Window):
             self.player_sprite.change_y = -5
         elif self.player_sprite.center_y < 0:
             self.player_sprite.change_y = 5
+            
+        
 
 def main():
     """Main function"""
