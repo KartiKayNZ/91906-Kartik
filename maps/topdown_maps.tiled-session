@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "level_1.tmx",
+    "activeFile": "",
     "expandedProjectPaths": [
         "."
     ],
@@ -18,16 +18,24 @@
             "scale": 1.7792708333333331,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 190.80850067326273,
-                "y": 174.79070312042626
+                "x": 191.37052865757272,
+                "y": 247.85434108073304
+            }
+        },
+        "level_1_big.tmx": {
+            "scale": 0.92921875,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 640.8609382882125,
+                "y": 360.51790818900287
             }
         },
         "sampleMap.tmx": {
             "scale": 1.8465625,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 258.0470468776443,
-                "y": 159.7563039431376
+                "x": 258.5885936706718,
+                "y": 160.29785073616517
             }
         },
         "sampleSheet.tsx": {
@@ -51,10 +59,10 @@
     "project": "topdown_maps.tiled-project",
     "property.type": "bool",
     "recentFiles": [
+        "sampleSheet.tsx",
         "TopDownTilesKennyS.tsx",
-        "sampleMap.tmx",
         "level_1.tmx",
-        "sampleSheet.tsx"
+        "sampleMap.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.type": 1

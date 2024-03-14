@@ -4,9 +4,11 @@ Platformer Game
 import arcade
 import time
 
-# Constants
-SCREEN_WIDTH = 240
-SCREEN_HEIGHT = 240
+
+
+
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
 SCREEN_TITLE = "Platformer"
 
 # The position where the player starts
@@ -14,14 +16,13 @@ PLAYER_START_X = 40
 PLAYER_START_Y = 100
 
 # Constants used to scale our sprites from their original size
-CHARACTER_SCALING = 0.1
-TILE_SCALING = 0.5
+CHARACTER_SCALING = 0.75
+TILE_SCALING = 2
 
 # Movement speed of player, in pixels per frame
-PLAYER_MOVEMENT_SPEED = 0.5
+PLAYER_MOVEMENT_SPEED = 10
 PLAYER_DASH_SPEED = 20
 GRAVITY = 1
-PLAYER_JUMP_SPEED = 20
 DASH_MULTIPLIER = 4
 
 # Layer names from the tiled map
@@ -73,17 +74,18 @@ class MyGame(arcade.Window):
         self.left_pressed = None
         self.right_pressed = None
         
-        arcade.set_background_color(arcade.csscolor.CORNFLOWER_BLUE)
+        arcade.set_background_color((234, 165, 108))
 
     def setup(self):
         """Set up the game here. Call this function to restart the game."""
 
 
         # Set up the Camera
-        self.camera = arcade.Camera(50, 50)
+        self.camera = arcade.Camera(self.width, self.height)
+        
 
         # Name of map file to load
-        map_name = "maps/level_1.tmx"
+        map_name = "maps/level_1_big.tmx"
 
         # Layer specific options are defined based on Layer names in a dictionary
         # Doing this will make the SpriteList for the platforms layer
@@ -203,15 +205,20 @@ class MyGame(arcade.Window):
             self.update_player_speed()
 
     def center_camera_to_player(self):
-        screen_center_x = self.player_sprite.center_x - (self.camera.viewport_width / 2)
-        screen_center_y = self.player_sprite.center_y - (self.camera.viewport_height / 2)
+        screen_center_x = self.player_sprite.center_x - (self.camera.viewport_width/2)
+        screen_center_y = self.player_sprite.center_y - (self.camera.viewport_height/2)
 
         # Don't let camera travel past 0
         if screen_center_x < 0:
             screen_center_x = 0
-            
+        
         if screen_center_y < 0:
             screen_center_y = 0
+            
+        if screen_center_x >= 1280:
+            screen_center_x = 1280
+        if screen_center_y >= 720:
+            screen_center_y = 720
 
         player_centered = screen_center_x, screen_center_y
 
@@ -223,7 +230,7 @@ class MyGame(arcade.Window):
     def on_update(self, delta_time):
         """Movement and game logic"""
 
-        if self.dashing == True:
+        '''if self.dashing == True:
             self.player_sprite.change_y = PLAYER_DASH_SPEED * direction[1]
             self.player_sprite.change_x = PLAYER_DASH_SPEED * direction[0]
             self.dashtime += 1
@@ -232,7 +239,7 @@ class MyGame(arcade.Window):
                 self.dash_start = 0
                 if self.dashing == True:
                     self.player_sprite.change_y = PLAYER_MOVEMENT_SPEED * direction [0]
-                    self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED * direction [1]
+                    self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED * direction [1]'''
             
         
         # Move the player with the physics engine
@@ -262,8 +269,15 @@ class MyGame(arcade.Window):
             '''#ADD A HEAL NOISE!!!!!!!!!!!!!!'''
             
             #arcade.play_sound(self.heal_noise)
-
-
+        if self.player_sprite.center_x > 2550:
+            self.player_sprite.change_x = -5
+        elif self.player_sprite.center_x < 0:
+            self.player_sprite.change_x = 5
+            
+        if self.player_sprite.center_y > 1425:
+            self.player_sprite.change_y = -5
+        elif self.player_sprite.center_y < 0:
+            self.player_sprite.change_y = 5
 
 def main():
     """Main function"""
