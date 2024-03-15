@@ -37,6 +37,9 @@ LAYER_NAME_PLAYER = "Player"
 # Direction List
 direction = [0, 0]
 
+# Value of health pot
+HEALTH_POT_VALUE = 25
+
 # Constants used to keep track of the player's current direction
 RIGHT_FACING = 0
 LEFT_FACING = 0
@@ -107,7 +110,7 @@ class PlayerCharacter(arcade.Sprite):
         # Hit box will be set based on the first image used. If you want to specify
         # a different hit box, you can do it like the code below.
         # set_hit_box = [[-22, -64], [22, -64], [22, 28], [-22, 28]]
-        self.hit_box = self.texture.hit_box_points
+        #self.hit_box = self.texture.hit_box_points
 
 
 class MyGame(arcade.Window):
@@ -149,6 +152,8 @@ class MyGame(arcade.Window):
         self.down_pressed = None
         self.left_pressed = None
         self.right_pressed = None
+        
+        self.heal_sound = arcade.load_sound("assets/heal.mp3")
 
         score_text = f"Score: {self.score}"
         arcade.draw_text(
@@ -317,7 +322,6 @@ class MyGame(arcade.Window):
         self.camera.move_to(player_centered)
 
     def update_animation(self, delta_time: float = 1 / 60):
-
         # Figure out if we need to flip face left or right
         if self.change_x < 0 and self.character_face_direction == RIGHT_FACING:
             self.character_face_direction = LEFT_FACING
@@ -356,21 +360,21 @@ class MyGame(arcade.Window):
         # Loop through each coin we hit (if any) and remove it
         for pot in pot_hit_list:
     
-            # Figure out how many points this coin is worth
-            if "health" not in pot.properties:
-                print("Warning, collected a coin without a Points property.")
+            '''# Figure out how many points this coin is worth
+            if "heal" not in pot.properties:
+                print("Warning, collected a heatlh pot without a health property.")
             else:
-                health = int(pot.properties["health"])
+                health = int(pot.properties["heal"])
                 self.health += health
-                print(self.health)
-
+                print(self.health)'''
             # Remove the coin
             pot.remove_from_sprite_lists()
+            self.health += HEALTH_POT_VALUE
+            arcade.play_sound(self.heal_sound)
             
             
-            '''#ADD A HEAL NOISE!!!!!!!!!!!!!!'''
             
-            #arcade.play_sound(self.heal_noise)
+
         if self.player_sprite.center_x > 2550:
             self.player_sprite.change_x = -5
         elif self.player_sprite.center_x < 0:
