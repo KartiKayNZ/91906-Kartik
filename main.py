@@ -16,7 +16,7 @@ PLAYER_START_X = 40
 PLAYER_START_Y = 100
 
 # Constants used to scale our sprites from their original size
-CHARACTER_SCALING = 0.75
+CHARACTER_SCALING = 2
 TILE_SCALING = 2
 
 # Movement speed of player, in pixels per frame
@@ -32,10 +32,82 @@ LAYER_NAME_TRACKS = "Tracks"
 LAYER_NAME_BACKGROUND = "Background"
 LAYER_NAME_DOORS = "Doors"
 LAYER_NAME_ENEMIES = "Enemies"
+LAYER_NAME_PLAYER = "Player"
 
 # Direction List
 direction = [0, 0]
 
+# Constants used to keep track of the player's current direction
+RIGHT_FACING = 0
+LEFT_FACING = 0
+UP_FACING = 0
+DOWN_FACING = 0
+IDLE_FACING = 1
+
+def load_texture_pair(filename):
+    """
+    Load a texture pair, with the second being a mirror image.
+    """
+    return [
+        arcade.load_texture(filename),
+        arcade.load_texture(filename, flipped_horizontally=True),
+    ]
+
+
+class PlayerCharacter(arcade.Sprite):
+    """Player Sprite"""
+
+    def __init__(self):
+
+        # Set up parent class
+        super().__init__()
+
+        # Default to face-right
+        self.character_face_direction = IDLE_FACING
+
+        # Used for flipping between image sequences
+        self.cur_texture = 0
+        self.scale = CHARACTER_SCALING
+
+        # Track the current state of what key is pressed
+        self.left_pressed = False
+        self.right_pressed = False
+        self.up_pressed = False
+        self.down_pressed = False
+        
+        # --- Load Textures ---
+
+        # Images from Kenney.nl's Asset Pack 3
+        main_path = "assets/player_sprites/player"
+
+        # Load textures for idle standing
+        self.idle_textures = []
+        for i in range(6):
+            #texture = load_texture_pair(f"{main_path}_idle_{i}.png")
+            #self.idle_textures.append(texture[0])
+            idle_texture = load_texture_pair(f"{main_path}_idle_{i}.png")[0]
+            self.idle_textures.append(idle_texture)
+
+        # Load textures for walking
+        self.walk_textures = []
+        for i in range(6):
+            #texture = load_texture_pair(f"{main_path}_walk_{i}.png")
+            #self.walk_textures.append(texture[0])
+            walk_texture = load_texture_pair(f"{main_path}_walk_{i}.png")[0]
+            self.walk_textures.append(walk_texture)
+            
+
+        # Set the initial texture
+        self.texture = self.idle_textures[0]
+
+        # Hit box will be set based on the first image used. If you want to specify
+        # a different hit box, you can do it like the code below.
+        # set_hit_box = [[-22, -64], [22, -64], [
+
+        # Hit box will be set based on the first image used. If you want to specify
+        # a different hit box, you can do it like the code below.
+        # set_hit_box = [[-22, -64], [22, -64], [22, 28], [-22, 28]]
+        self.hit_box = self.texture.hit_box_points
 
 
 class MyGame(arcade.Window):
@@ -101,10 +173,8 @@ class MyGame(arcade.Window):
     def setup(self):
         """Set up the game here. Call this function to restart the game."""
 
-
         # Set up the Camera
         self.camera = arcade.Camera(self.width, self.height)
-        
 
         # Name of map file to load
         map_name = "maps/level_1_big.tmx"
@@ -131,16 +201,12 @@ class MyGame(arcade.Window):
         # from the map as SpriteLists in the scene in the proper order.
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
-        # Create the Sprite lists
-        self.scene.add_sprite_list("Player")
-
         # Set up the player, specifically placing it at these coordinates.
-        image_source = ":resources:images/animated_characters/female_adventurer/femaleAdventurer_idle.png"
-        self.player_sprite = arcade.Sprite(image_source, CHARACTER_SCALING)
-        self.player_sprite.center_x = 64
-        self.player_sprite.center_y = 96
+        self.player_sprite = PlayerCharacter()
+        self.player_sprite.center_x = PLAYER_START_X
+        self.player_sprite.center_y = PLAYER_START_Y
         self.scene.add_sprite("Player", self.player_sprite)
-        
+
         # Create the 'physics engine'
         # Set the background color
         if self.tile_map.background_color:
@@ -149,8 +215,8 @@ class MyGame(arcade.Window):
         # Create the 'physics engine'
         self.physics_engine = arcade.PhysicsEngineSimple(
             self.player_sprite, walls=self.scene["Walls"]
-        )
-
+            )
+        
         
         
     def on_draw(self):
@@ -183,68 +249,50 @@ class MyGame(arcade.Window):
             18,
         )
 
-    def update_player_speed(self):
+    def process_keychange(self):
+        
+        # Process left/right
+        if self.right_pressed and not self.left_pressed:
+            self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
+        elif self.left_pressed and not self.right_pressed:
+            self.player_sprite.change_x = -PLAYER_MOVEMENT_SPEED
+        else:
+            self.player_sprite.change_x = 0
+        
         if self.up_pressed and not self.down_pressed:
             self.player_sprite.change_y = PLAYER_MOVEMENT_SPEED
-            direction[0] = 1
         elif self.down_pressed and not self.up_pressed:
             self.player_sprite.change_y = -PLAYER_MOVEMENT_SPEED
-            direction[0] = -1
-        if self.left_pressed and not self.right_pressed:
-            self.player_sprite.change_x = -PLAYER_MOVEMENT_SPEED
-            direction[1] = -1
-        elif self.right_pressed and not self.left_pressed:
-            self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
-            direction[1] = 1
-
-        if self.right_pressed and self.left_pressed:
-            self.player_sprite.change_x = 0
-            direction[1] = 0
-        if self.up_pressed and self.down_pressed:
+        else:
             self.player_sprite.change_y = 0
-            direction[0] = 0
-            
-        if not self.right_pressed and not self.left_pressed:
-            self.player_sprite.change_x = 0
-            direction[1] = 0
-        if not self.up_pressed and not self.down_pressed:
-            self.player_sprite.change_y = 0
-            direction[0] = 0
 
     def on_key_press(self, key, modifiers):
-        """When a key is pressed/held down."""
+        """Called whenever a key is pressed."""
 
-        if key == arcade.key.SPACE:
-            self.dashing = True
-            
-        if key == arcade.key.W: 
+        if key == arcade.key.UP or key == arcade.key.W:
             self.up_pressed = True
-            self.update_player_speed()
-        elif key == arcade.key.S:
+        elif key == arcade.key.DOWN or key == arcade.key.S:
             self.down_pressed = True
-            self.update_player_speed()
-        elif key == arcade.key.D:
-            self.right_pressed = True
-            self.update_player_speed()
-        elif key == arcade.key.A:
+        elif key == arcade.key.LEFT or key == arcade.key.A:
             self.left_pressed = True
-            self.update_player_speed()
+        elif key == arcade.key.RIGHT or key == arcade.key.D:
+            self.right_pressed = True
+
+        self.process_keychange()
 
     def on_key_release(self, key, modifiers):
-        """When a held key is released."""
+        """Called when the user releases a key."""
 
-        if key == arcade.key.W:
+        if key == arcade.key.UP or key == arcade.key.W:
             self.up_pressed = False
-            self.update_player_speed()
-        elif key == arcade.key.S:
+        elif key == arcade.key.DOWN or key == arcade.key.S:
             self.down_pressed = False
-            self.update_player_speed()
-        elif key == arcade.key.D:
-            self.right_pressed = False
-            self.update_player_speed()
-        elif key == arcade.key.A:
+        elif key == arcade.key.LEFT or key == arcade.key.A:
             self.left_pressed = False
-            self.update_player_speed()
+        elif key == arcade.key.RIGHT or key == arcade.key.D:
+            self.right_pressed = False
+
+        self.process_keychange()
 
     def center_camera_to_player(self):
         screen_center_x = self.player_sprite.center_x - (self.camera.viewport_width/2)
@@ -268,27 +316,38 @@ class MyGame(arcade.Window):
 
         self.camera.move_to(player_centered)
 
+    def update_animation(self, delta_time: float = 1 / 60):
 
+        # Figure out if we need to flip face left or right
+        if self.change_x < 0 and self.character_face_direction == RIGHT_FACING:
+            self.character_face_direction = LEFT_FACING
+        elif self.change_x > 0 and self.character_face_direction == LEFT_FACING:
+            self.character_face_direction = RIGHT_FACING
+
+        # Idle animation
+        if self.change_x == 0:
+            self.texture = self.idle_textures[self.character_face_direction]
+            return
+
+        # Walking animation
+        self.cur_texture += 1
+        if self.cur_texture > 7:
+            self.cur_texture = 0
+        self.texture = self.walk_textures[self.cur_texture // 2][self.character_face_direction]
+        
     def on_update(self, delta_time):
         """Movement and game logic"""
 
-        '''if self.dashing == True:
-            self.player_sprite.change_y = PLAYER_DASH_SPEED * direction[1]
-            self.player_sprite.change_x = PLAYER_DASH_SPEED * direction[0]
-            self.dashtime += 1
-            if self.dashtime == 10:
-                self.dashing = False
-                self.dash_start = 0
-                if self.dashing == True:
-                    self.player_sprite.change_y = PLAYER_MOVEMENT_SPEED * direction [0]
-                    self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED * direction [1]'''
-            
-        
         # Move the player with the physics engine
         self.physics_engine.update()
 
+        # Update the player's animation
+        self.player_sprite.update_animation(delta_time)
+
         # Position the camera
         self.center_camera_to_player()
+
+        # ... rest of the code ...
         
         pot_hit_list = arcade.check_for_collision_with_list(
             self.player_sprite, self.scene["Health Pot"]
