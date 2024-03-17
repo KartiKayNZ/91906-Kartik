@@ -42,10 +42,10 @@ HEALTH_POT_VALUE = 25
 
 # Constants used to keep track of the player's current direction
 RIGHT_FACING = 0
-LEFT_FACING = 0
-UP_FACING = 0
-DOWN_FACING = 0
-IDLE_FACING = 1
+LEFT_FACING = 1
+UP_FACING = 2
+DOWN_FACING = 3
+IDLE_FACING = 4
 
 def load_texture_pair(filename):
     """
@@ -80,38 +80,47 @@ class PlayerCharacter(arcade.Sprite):
         
         # --- Load Textures ---
 
-        # Images from Kenney.nl's Asset Pack 3
+        # player assets
         main_path = "assets/player_sprites/player"
 
         # Load textures for idle standing
         self.idle_textures = []
         for i in range(6):
-            #texture = load_texture_pair(f"{main_path}_idle_{i}.png")
-            #self.idle_textures.append(texture[0])
-            idle_texture = load_texture_pair(f"{main_path}_idle_{i}.png")[0]
-            self.idle_textures.append(idle_texture)
+            idle_texture = arcade.load_texture_pair(f"{main_path}_idle_{i}.png")
+            self.idle_textures.append(idle_texture[RIGHT_FACING])
 
         # Load textures for walking
         self.walk_textures = []
         for i in range(6):
-            #texture = load_texture_pair(f"{main_path}_walk_{i}.png")
-            #self.walk_textures.append(texture[0])
-            walk_texture = load_texture_pair(f"{main_path}_walk_{i}.png")[0]
-            self.walk_textures.append(walk_texture)
+            walk_texture_pair = load_texture_pair(f"{main_path}_walk_{i}.png")
+            self.walk_textures.append(walk_texture_pair[RIGHT_FACING])
             
+        # LIST INDEX OUT OF RANGE ERROR
+        '''self.vert_walk_textures = []
+        for i in range (6):
+            vert_walk_texture_pair = load_texture_pair(f"{main_path}_walk_down_{i}.png")
+            self.vert_walk_textures.append(vert_walk_texture_pair[UP_FACING])'''
 
         # Set the initial texture
-        self.texture = self.idle_textures[0]
+        self.texture = self.idle_textures[self.character_face_direction]
 
-        # Hit box will be set based on the first image used. If you want to specify
-        # a different hit box, you can do it like the code below.
-        # set_hit_box = [[-22, -64], [22, -64], [
 
-        # Hit box will be set based on the first image used. If you want to specify
-        # a different hit box, you can do it like the code below.
-        # set_hit_box = [[-22, -64], [22, -64], [22, 28], [-22, 28]]
-        #self.hit_box = self.texture.hit_box_points
-
+    def update_animation(self, delta_time: float = 1 / 60):
+        if self.change_x < 0 and self.character_face_direction == RIGHT_FACING:
+            self.character_face_direction = LEFT_FACING
+        elif self.change_x > 0 and self.character_face_direction == LEFT_FACING:
+            self.character_face_direction = RIGHT_FACING
+        
+        # Idle animation
+        if self.change_x == 0:
+            self.texture = self.idle_texture_pair[self.character_face_direction]
+            return
+        
+        # Walking animation
+        self.cur_texture += 1
+        if self.cur_texture > 5:
+            self.cur_texture = 0
+        self.texture = self.walk_textures[self.cur_texture][self.character_face_direction]
 
 class MyGame(arcade.Window):
     """
@@ -212,6 +221,8 @@ class MyGame(arcade.Window):
         self.player_sprite.center_y = PLAYER_START_Y
         self.scene.add_sprite("Player", self.player_sprite)
 
+        
+        
         # Create the 'physics engine'
         # Set the background color
         if self.tile_map.background_color:
@@ -255,7 +266,6 @@ class MyGame(arcade.Window):
         )
 
     def process_keychange(self):
-        
         # Process left/right
         if self.right_pressed and not self.left_pressed:
             self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
@@ -320,25 +330,7 @@ class MyGame(arcade.Window):
 
 
         self.camera.move_to(player_centered)
-
-    def update_animation(self, delta_time: float = 1 / 60):
-        # Figure out if we need to flip face left or right
-        if self.change_x < 0 and self.character_face_direction == RIGHT_FACING:
-            self.character_face_direction = LEFT_FACING
-        elif self.change_x > 0 and self.character_face_direction == LEFT_FACING:
-            self.character_face_direction = RIGHT_FACING
-
-        # Idle animation
-        if self.change_x == 0:
-            self.texture = self.idle_textures[self.character_face_direction]
-            return
-
-        # Walking animation
-        self.cur_texture += 1
-        if self.cur_texture > 7:
-            self.cur_texture = 0
-        self.texture = self.walk_textures[self.cur_texture // 2][self.character_face_direction]
-        
+       
     def on_update(self, delta_time):
         """Movement and game logic"""
 
@@ -372,9 +364,11 @@ class MyGame(arcade.Window):
             self.health += HEALTH_POT_VALUE
             arcade.play_sound(self.heal_sound)
             
+        self.scene.update_animation(
+            delta_time, [LAYER_NAME_BACKGROUND, LAYER_NAME_PLAYER]
+        )
             
-            
-
+        # Boundary code 
         if self.player_sprite.center_x > 2550:
             self.player_sprite.change_x = -5
         elif self.player_sprite.center_x < 0:

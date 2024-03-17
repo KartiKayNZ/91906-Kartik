@@ -223,6 +223,8 @@ class MyGame(arcade.Window):
         self.player_sprite.center_y = PLAYER_START_Y
         self.scene.add_sprite("Player", self.player_sprite)
 
+        
+        
         # Create the 'physics engine'
         # Set the background color
         if self.tile_map.background_color:
