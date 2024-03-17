@@ -120,11 +120,9 @@ class PlayerCharacter(arcade.Sprite):
         
         # Walking animation
         self.cur_texture += 1
-        if self.cur_texture > 7:
+        if self.cur_texture > 3:
             self.cur_texture = 0
-        self.texture = self.walk_textures[self.cur_texture][
-            self.character_face_direction
-        ]
+        self.texture = self.walk_textures[self.cur_texture]
 
 class MyGame(arcade.Window):
     """
@@ -333,25 +331,7 @@ class MyGame(arcade.Window):
 
 
         self.camera.move_to(player_centered)
-
-    '''def update_animation(self, delta_time: float = 1 / 60):
-        # Figure out if we need to flip face left or right
-        if self.change_x < 0 and self.character_face_direction == RIGHT_FACING:
-            self.character_face_direction = LEFT_FACING
-        elif self.change_x > 0 and self.character_face_direction == LEFT_FACING:
-            self.character_face_direction = RIGHT_FACING
-
-        # Idle animation
-        if self.change_x == 0:
-            self.texture = self.idle_textures[self.character_face_direction]
-            return
-
-        # Walking animation
-        self.cur_texture += 1
-        if self.cur_texture > 7:
-            self.cur_texture = 0
-        self.texture = self.walk_textures[self.cur_texture // 2][self.character_face_direction]'''
-        
+       
     def on_update(self, delta_time):
         """Movement and game logic"""
 
