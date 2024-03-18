@@ -90,10 +90,18 @@ class PlayerCharacter(arcade.Sprite):
             self.idle_textures.append(idle_texture)
 
         # Load textures for walking
-        self.walk_textures = []
+        '''self.walk_textures = []
         for i in range(6):
             walk_texture = load_texture_pair(f"{main_path}_walk_{i}.png")[0]
-            self.walk_textures.append(walk_texture)
+            self.walk_textures.append(walk_texture)'''
+            
+        self.walk_textures = {}
+        for direction in ['up', 'down', 'left', 'right']:
+            texture_pair = []
+            for i in range(6):
+                walk_texture = arcade.load_texture_pair(f"{main_path}_walk_{direction}_{i}.png")[0]
+                texture_pair.append(walk_texture)
+            self.walk_textures[direction] = texture_pair
             
 
         # Set the initial texture
@@ -107,7 +115,9 @@ class PlayerCharacter(arcade.Sprite):
         # a different hit box, you can do it like the code below.
         # set_hit_box = [[-22, -64], [22, -64], [22, 28], [-22, 28]]
         #self.hit_box = self.texture.hit_box_points
-    def update_animation(self, delta_time: float = 1 / 60):
+    '''def update_animation(self, delta_time: float = 1 / 60):
+    
+    
         if self.change_x < 0 and self.character_face_direction == RIGHT_FACING:
             self.character_face_direction = LEFT_FACING
         elif self.change_x > 0 and self.character_face_direction == LEFT_FACING:
@@ -122,7 +132,31 @@ class PlayerCharacter(arcade.Sprite):
         self.cur_texture += 1
         if self.cur_texture > 3:
             self.cur_texture = 0
-        self.texture = self.walk_textures[self.cur_texture]
+        self.texture = self.walk_textures[self.cur_texture]'''
+        
+        
+    def update_animation(self, delta_time: float = 1 / 60):
+        if self.change_x == 0 and self.change_y == 0:
+            self.texture = self.idle_textures[self.character_face_direction]
+            return
+
+        direction = ''
+        if self.change_x < 0:
+            direction += 'left'
+        elif self.change_x > 0:
+            direction += 'right'
+
+        if self.change_y < 0:
+            direction += 'up'
+        elif self.change_y > 0:
+            direction += 'down'
+
+        self.cur_texture += 1
+        if self.cur_texture > 3:
+            self.cur_texture = 0
+
+        self.texture = self.walk_textures[direction][self.cur_texture]
+        
 
 class MyGame(arcade.Window):
     """
@@ -165,6 +199,15 @@ class MyGame(arcade.Window):
         self.right_pressed = None
         
         self.heal_sound = arcade.load_sound("assets/heal.mp3")
+        
+        main_path = "assets/player_sprites/player"
+        
+        self.idle_textures = {
+            'up': arcade.load_texture_pair(f"{main_path}_idle_up.png"),
+            'down': arcade.load_texture_pair(f"{main_path}_idle_down.png"),
+            'left': arcade.load_texture_pair(f"{main_path}_idle_left.png"),
+            'right': arcade.load_texture_pair(f"{main_path}_idle_right.png"),
+        }
 
         score_text = f"Score: {self.score}"
         arcade.draw_text(
