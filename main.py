@@ -1,5 +1,5 @@
 """
-Platformer Game
+Top Down Game
 """
 import arcade
 import time
@@ -20,7 +20,7 @@ PLAYER_START_Y = 100
 # Constants used to scale our sprites from their original size
 CHARACTER_SCALING = 2
 TILE_SCALING = 2
-ENEMY_SCALING = 0.5
+ENEMY_SCALING = 1.5
 
 # Movement speed of player, in pixels per frame
 PLAYER_MOVEMENT_SPEED = 5
@@ -128,7 +128,18 @@ class PlayerCharacter(arcade.Sprite):
             self.cur_texture = 0
 
         self.texture = self.walk_textures[direction][self.cur_texture]
+        
+    def attack(self, game):
+        enemy = self.scene["Enemy"][0]  # Get the enemy sprite
+        enemy_distance = self.distance_to(enemy)
 
+        if math.sqrt(enemy_distance) <= 50:
+            if arcade.check_for_collision(self, enemy):
+                game.enemy_health -= 5
+                if game.enemy_health <= 0:
+                    enemy.remove_from_sprite_lists()
+                    game.door_unlock = True
+    
 class MyGame(arcade.Window):
     """
     Main application class.
@@ -248,7 +259,7 @@ class MyGame(arcade.Window):
         self.scene.add_sprite_list("Player")
         
         #Enemy sprite
-        enemy_img = ":resources:images/animated_characters/male_adventurer/maleAdventurer_idle.png"
+        enemy_img = "assets/enemy_sprites/enemy_08.png"
         self.enemy_sprite = arcade.Sprite(enemy_img, ENEMY_SCALING)
         self.enemy_sprite.center_x = 400
         self.enemy_sprite.center_y = 450
@@ -265,7 +276,6 @@ class MyGame(arcade.Window):
         self.physics_engine = arcade.PhysicsEngineSimple(
             self.player_sprite, walls=self.scene["Walls"]
             )
-        
         
         
     def on_draw(self):
@@ -325,6 +335,8 @@ class MyGame(arcade.Window):
             self.left_pressed = True
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.right_pressed = True
+        elif key == arcade.key.E:
+            self.player_sprite.attack(self)
 
         self.process_keychange()
 
@@ -376,7 +388,7 @@ class MyGame(arcade.Window):
         # Position the camera
         self.center_camera_to_player()
 
-        # ... rest of the code ...
+        
         
         pot_hit_list = arcade.check_for_collision_with_list(
             self.player_sprite, self.scene["Health Pot"]

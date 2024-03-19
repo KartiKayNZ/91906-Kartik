@@ -83,6 +83,7 @@ class PlayerCharacter(arcade.Sprite):
         self.right_pressed = False
         self.up_pressed = False
         self.down_pressed = False
+        self.attacking = False
         
         # --- Load Textures ---
 
@@ -103,6 +104,12 @@ class PlayerCharacter(arcade.Sprite):
                 walk_texture = arcade.load_texture_pair(f"{main_path}_walk_{direction}_{i}.png")[0]
                 texture_pair.append(walk_texture)
             self.walk_textures[direction] = texture_pair
+            
+        self.sword_textures = []
+        for i in range(3):
+            swing_texture = arcade.load_texture_pair(f"assets/player_sprites/player_swing_{direction}_{i}.png")[0]
+            self.sword_textures.append(swing_texture)
+        
         # Set the initial texture
         self.texture = self.idle_textures[0]
 
@@ -124,11 +131,20 @@ class PlayerCharacter(arcade.Sprite):
             direction = 'down'
 
         self.cur_texture += 1
-        if self.cur_texture > 5:
-            self.cur_texture = 0
+        if self.attacking == False:
+            if self.cur_texture > 5:
+                self.cur_texture = 0
+        else:
+            if self.cur_texture > 2:
+                self.cur_texture = 0
 
+        if self.attacking == True:
+            self.texture = self.sword_textures[self.cur_texture]
+        else:
+            self.texture = self.walk_textures[direction][self.cur_texture]
+        
         self.texture = self.walk_textures[direction][self.cur_texture]
-
+        
 class MyGame(arcade.Window):
     """
     Main application class.
@@ -325,6 +341,9 @@ class MyGame(arcade.Window):
             self.left_pressed = True
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.right_pressed = True
+        elif key == arcade.key.E:
+            self.attacking = True
+            print("Attacking")
 
         self.process_keychange()
 
@@ -464,8 +483,22 @@ class MyGame(arcade.Window):
                 self.invincible = False
                 self.invincible_time = 0
 
-
-        
+        # ATTACK CODE 
+        # 
+        self.attacking = True
+        angle = 0
+        radius = 30
+        for enemy in self.scene["Enemy"]:
+            dist_x = enemy.center_x - self.player_sprite.center_x
+            dist_y = enemy.center_y - self.player_sprite.center_y
+            if dist_x == 0 and dist_y == 0:
+                continue
+            angle = math.atan2(dist_y, dist_x)
+            distance = math.sqrt(dist_x**2 + dist_y**2)
+            if distance <= radius and angle >= -math.pi/2 and angle <= math.pi/2:
+                self.enemy_health -= 10
+                print(f"Enemy health: {self.enemy_health}")
+        self.attacking = False
         
             
         # Boundary code 
