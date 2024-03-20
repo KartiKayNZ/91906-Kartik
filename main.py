@@ -561,33 +561,33 @@ class MyGame(arcade.Window):
         
                 
             
-            # Update the bullet sprites
-            for bullet in self.scene[LAYER_NAME_BULLETS]:
-                hit_list = arcade.check_for_collision_with_lists(
-                    bullet,
-                    [
-                        self.scene[LAYER_NAME_ENEMIES],
-                        self.scene[LAYER_NAME_WALLS]
-                    ],
-                )
+        # Update the bullet sprites
+        for bullet in self.scene[LAYER_NAME_BULLETS]:
+            hit_list = arcade.check_for_collision_with_lists(
+                bullet,
+                [
+                    self.scene[LAYER_NAME_ENEMIES],
+                    self.scene[LAYER_NAME_WALLS]
+                ],
+            )
 
-                if hit_list:
-                    bullet.remove_from_sprite_lists()
+            if hit_list:
+                bullet.remove_from_sprite_lists()
 
-                    for collision in hit_list:
-                        if self.enemy_sprite in collision.sprite_lists:
-                            # The collision was with an enemy
-                            self.enemy_health -= BULLET_DAMAGE
+                for collision in hit_list:
+                    if self.enemy_sprite in collision.sprite_lists:
+                        # The collision was with an enemy
+                        self.enemy_health -= BULLET_DAMAGE
 
-                            if self.enemy_health <= 0:
-                                collision.remove_from_sprite_lists()
-                                # Change this later but it shoudl be the score or sumn
-                                self.door_unlock = True
+                        if self.enemy_health <= 0:
+                            collision.remove_from_sprite_lists()
+                            # Change this later but it shoudl be the score or sumn
+                            self.door_unlock = True
 
-                            # Hit sound
-                            arcade.play_sound(self.hit_sound)
+                        # Hit sound
+                        arcade.play_sound(self.hit_sound)
 
-                            return
+                        return
                         
         '''for bullet in self.scene[LAYER_NAME_BULLETS]:
             hit_list = arcade.check_for_collision_with_lists(
@@ -610,9 +610,7 @@ class MyGame(arcade.Window):
 
                 return'''
         
-        self.scene.update(
-            [LAYER_NAME_BULLETS]
-        )
+        
             
             # Boundary code 
         if self.player_sprite.center_x > 2550:
