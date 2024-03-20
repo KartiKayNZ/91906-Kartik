@@ -517,7 +517,7 @@ class MyGame(arcade.Window):
                     "assets/player_sprites/sword_slash.png",
                     SPRITE_SCALING_LASER,
                 )
-                self.LAYER_NAME_BULLETS.append(bullet)
+                self.scene.add_sprite(LAYER_NAME_BULLETS, bullet)
                 if bullet in self.bullet_list:
                     print("success")
                 else:
@@ -560,46 +560,39 @@ class MyGame(arcade.Window):
                 self.shoot_timer = 0
         
                 
-        
+            
+            # Update the bullet sprites
+            for bullet in self.scene[LAYER_NAME_BULLETS]:
+                hit_list = arcade.check_for_collision_with_lists(
+                    bullet,
+                    [
+                        self.scene[LAYER_NAME_ENEMIES],
+                        self.scene[LAYER_NAME_WALLS]
+                    ],
+                )
+
+                if hit_list:
+                    bullet.remove_from_sprite_lists()
+
+                    for collision in hit_list:
+                        if self.enemy_sprite in collision.sprite_lists:
+                            # The collision was with an enemy
+                            self.enemy_health -= BULLET_DAMAGE
+
+                            if self.enemy_health <= 0:
+                                collision.remove_from_sprite_lists()
+                                # Change this later but it shoudl be the score or sumn
+                                self.door_unlock = True
+
+                            # Hit sound
+                            arcade.play_sound(self.hit_sound)
+
+                            return
+                        
         '''for bullet in self.scene[LAYER_NAME_BULLETS]:
             hit_list = arcade.check_for_collision_with_lists(
                 bullet,
-                [
-                    self.scene[LAYER_NAME_ENEMIES],
-                    self.scene[LAYER_NAME_WALLS]
-                ],
-            )
-
-            if hit_list:
-                bullet.remove_from_sprite_lists()
-
-                for collision in hit_list:
-                    if (
-                        #self.scene[LAYER_NAME_ENEMIES]
-                        self.enemy_sprite in collision.sprite_lists
-                    ):
-                        # The collision was with an enemy
-                        self.enemy_health -= BULLET_DAMAGE
-
-                        if self.enemy_health <= 0:
-                            collision.remove_from_sprite_lists()
-                            # Change this later but it shoudl be the score or sumn
-                            self.door_unlock = True
-
-                        # Hit sound
-                        arcade.play_sound(self.hit_sound)
-                        
-                    return
-            if (bullet.right < 0) or (
-                bullet.left
-                > (self.tile_map.width * self.tile_map.tile_width) * TILE_SCALING
-            ):
-                bullet.remove_from_sprite_lists()'''
-                
-                
-        for bullet in self.LAYER_NAME_BULLETS:
-            hit_list = arcade.check_for_collision_with_lists(
-                bullet, self.scene[LAYER_NAME_ENEMIES]
+                self.scene[LAYER_NAME_ENEMIES]
             )
 
             if self.enemy_sprite in hit_list:
@@ -615,10 +608,11 @@ class MyGame(arcade.Window):
                 arcade.play_sound(self.hit_sound)
 
 
-                return
+                return'''
         
-        for bullet in self.bullet_list:
-            bullet.update()
+        self.scene.update(
+            [LAYER_NAME_BULLETS]
+        )
             
             # Boundary code 
         if self.player_sprite.center_x > 2550:
