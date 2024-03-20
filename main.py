@@ -199,7 +199,7 @@ class MyGame(arcade.Window):
         self.right_pressed = None
         
         self.shoot_sound = arcade.load_sound(":resources:sounds/hurt5.wav")
-        self.hit_sound = arcade.load_sound(":resources:sounds/hit5.wav")
+        self.hit_sound = arcade.load_sound("assets/hurt.mp3")
         self.heal_sound = arcade.load_sound("assets/heal.mp3")
         
         
@@ -245,9 +245,6 @@ class MyGame(arcade.Window):
             LAYER_NAME_DOORS:{
                 "use_spatial_hash": True,
             },
-            LAYER_NAME_BULLETS:{
-                "use_spatial_hash": True
-            },
         }
 
         # Read in the tiled map
@@ -264,6 +261,7 @@ class MyGame(arcade.Window):
         self.scene.add_sprite(LAYER_NAME_PLAYER, self.player_sprite)
 
         self.scene.add_sprite_list(LAYER_NAME_PLAYER)
+        self.scene.add_sprite_list(LAYER_NAME_BULLETS)
         
         #Enemy sprite
         enemy_img = "assets/enemy_sprites/enemy_08.png"
@@ -330,7 +328,6 @@ class MyGame(arcade.Window):
         )
         
         
-
     def process_keychange(self):
         # Process left/right
         if self.right_pressed and not self.left_pressed:
@@ -518,7 +515,7 @@ class MyGame(arcade.Window):
                     SPRITE_SCALING_LASER,
                 )
                 self.scene.add_sprite(LAYER_NAME_BULLETS, bullet)
-                if bullet in self.bullet_list:
+                if bullet in self.scene[LAYER_NAME_BULLETS]:
                     print("success")
                 else:
                     print("failure")
@@ -546,13 +543,10 @@ class MyGame(arcade.Window):
                 print(BULLET_SPEED)
                 print(bullet.change_x)
 
-                self.scene.add_sprite(LAYER_NAME_BULLETS, bullet)
+                #self.scene.add_sprite(LAYER_NAME_BULLETS, bullet)
 
                 self.can_shoot = False
-            
-                
-                
-                
+             
         else:
             self.shoot_timer += 1
             if self.shoot_timer == SHOOT_SPEED:
@@ -562,7 +556,7 @@ class MyGame(arcade.Window):
                 
             
         # Update the bullet sprites
-        for bullet in self.scene[LAYER_NAME_BULLETS]:
+        '''for bullet in self.scene[LAYER_NAME_BULLETS]:
             hit_list = arcade.check_for_collision_with_lists(
                 bullet,
                 [
@@ -587,32 +581,45 @@ class MyGame(arcade.Window):
                         # Hit sound
                         arcade.play_sound(self.hit_sound)
 
-                        return
-                        
-        '''for bullet in self.scene[LAYER_NAME_BULLETS]:
+                        return'''
+        for bullet in self.scene[LAYER_NAME_BULLETS]:
             hit_list = arcade.check_for_collision_with_lists(
                 bullet,
-                self.scene[LAYER_NAME_ENEMIES]
+                [
+                    self.scene[LAYER_NAME_ENEMIES],
+                    self.scene[LAYER_NAME_WALLS]
+                ],
             )
 
-            if self.enemy_sprite in hit_list:
-                # The collision was with an enemy
-                self.enemy_health -= BULLET_DAMAGE
+            bullet.update()
 
-                if self.enemy_health <= 0:
-                    self.enemy_sprite.remove_from_sprite_lists()
-                    # Change this later but it shoudl be the score or sumn
-                    self.door_unlock = True
+            if hit_list:
+                for collision in hit_list:
+                    if self.enemy_sprite in collision.sprite_lists:
+                        # The collision was with an enemy
+                        self.enemy_health -= BULLET_DAMAGE
+                        print(f"ENEMYHEALTH{self.enemy_health}")
+                        arcade.play_sound(self.hit_sound)
+                        if self.enemy_health <= 0:
+                            collision.remove_from_sprite_lists()
+                            # Change this later but it shoudl be the score or sumn
+                            self.door_unlock = True
 
-                # Hit sound
-                arcade.play_sound(self.hit_sound)
+                        # Hit sound
+                        arcade.play_sound(self.hit_sound)
 
+                        break
+                    else:
+                        print("enemy not in collision")
+                        
 
-                return'''
-        
-        
-            
+                bullet.remove_from_sprite_lists()
+             
             # Boundary code 
+        
+        for bullet in self.scene[LAYER_NAME_BULLETS]:
+            bullet.update()
+        
         if self.player_sprite.center_x > 2550:
             self.player_sprite.change_x = -5
         elif self.player_sprite.center_x < 0:
