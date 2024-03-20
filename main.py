@@ -520,38 +520,39 @@ class MyGame(arcade.Window):
                     ":resources:images/space_shooter/laserBlue01.png",
                     SPRITE_SCALING_LASER,
                 )
-
-                if self.player_sprite.direction == RIGHT_FACING:
-                    bullet.change_x = BULLET_SPEED
-                else:
-                    bullet.change_x = -BULLET_SPEED
-
+                
                 bullet.center_x = self.player_sprite.center_x
                 bullet.center_y = self.player_sprite.center_y
+                if self.player_sprite.change_x < 0:
+                    direction = 'left'
+                    bullet.change_x = -BULLET_SPEED
+                elif self.player_sprite.change_x > 0:
+                    direction = 'right'
+                    bullet.change_x = BULLET_SPEED
+                if self.player_sprite.change_y > 0:
+                    direction = 'up'
+                    bullet.change_y = BULLET_SPEED
+                elif self.player_sprite.change_y < 0:
+                    direction = 'down'
+                    bullet.change_y = -BULLET_SPEED
+                elif self.player_sprite.change_y == 0 and self.player_sprite.change_x == 0:
+                    direction = 'down'
+                    bullet.change_y = -BULLET_SPEED
+                
+                print(direction)
+                print(BULLET_SPEED)
+                
 
                 self.scene.add_sprite(LAYER_NAME_BULLETS, bullet)
 
                 self.can_shoot = False
+                
         else:
             self.shoot_timer += 1
             if self.shoot_timer == SHOOT_SPEED:
                 self.can_shoot = True
                 self.shoot_timer = 0
-
-        
-        
-            
-        # Boundary code 
-        if self.player_sprite.center_x > 2550:
-            self.player_sprite.change_x = -5
-        elif self.player_sprite.center_x < 0:
-            self.player_sprite.change_x = 5
-            
-        if self.player_sprite.center_y > 1425:
-            self.player_sprite.change_y = -5
-        elif self.player_sprite.center_y < 0:
-            self.player_sprite.change_y = 5
-            
+                
         
         for bullet in self.scene[LAYER_NAME_BULLETS]:
             hit_list = arcade.check_for_collision_with_lists(
@@ -587,6 +588,17 @@ class MyGame(arcade.Window):
                 > (self.tile_map.width * self.tile_map.tile_width) * TILE_SCALING
             ):
                 bullet.remove_from_sprite_lists()
+                
+            # Boundary code 
+        if self.player_sprite.center_x > 2550:
+            self.player_sprite.change_x = -5
+        elif self.player_sprite.center_x < 0:
+            self.player_sprite.change_x = 5
+            
+        if self.player_sprite.center_y > 1425:
+            self.player_sprite.change_y = -5
+        elif self.player_sprite.center_y < 0:
+            self.player_sprite.change_y = 5
 def main():
     """Main function"""
     window = MyGame()
