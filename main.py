@@ -162,13 +162,15 @@ class MyGame(arcade.Window):
         
         #Enemy health
         self.enemy_max_health = 20
-        self.enemy_health = 20
+        self.enemy_health = 100
 
         #Enemy attack
         self.enemy_attack = 5
 
         #Enemy following player
         self.enemy_follow = True
+        
+        self.enemy_can_attack = True
         
         self.dashing = None
         
@@ -179,6 +181,7 @@ class MyGame(arcade.Window):
         
         self.knockback = None
         self.knockback_time = 0
+        self.enemy_knockback = False
         
         self.door_unlock = False
         
@@ -201,6 +204,7 @@ class MyGame(arcade.Window):
         self.shoot_sound = arcade.load_sound(":resources:sounds/hurt5.wav")
         self.hit_sound = arcade.load_sound("assets/hurt.mp3")
         self.heal_sound = arcade.load_sound("assets/heal.mp3")
+        self.yay_sound = arcade.load_sound("assets/yay.mp3")
         
         
         score_text = f"Score: {self.score}"
@@ -443,59 +447,71 @@ class MyGame(arcade.Window):
         )
         
         ###ENEMY FOLLOWING PLAYER###
-            
-        #Enemy following player
-        self.enemy_sprite.center_x += self.enemy_sprite.change_x
-        self.enemy_sprite.center_y += self.enemy_sprite.change_y
-
-        #Records the enemy's position
-        start_x = self.enemy_sprite.center_x
-        start_y = self.enemy_sprite.center_y
-
-        #Records the player's position
-        dest_x = self.player_sprite.center_x
-        dest_y = self.player_sprite.center_y
-
-        #Calculates the x and y distance between the enemy and the player
-        dist_x = int(dest_x - start_x)
-        dist_y = int(dest_y - start_y)
-        #Using trig to find the angle difference between the player and enemy
-        angle = math.atan2(dist_y, dist_x)
         
-        #Checks for collision between the player and enemy
-        if self.invincible != True:
-            enemy_collision = arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
-        else:
-            enemy_collision = False
+        if self.enemy_can_attack == True:
+                
+            #Enemy following player
+            self.enemy_sprite.center_x += self.enemy_sprite.change_x
+            self.enemy_sprite.center_y += self.enemy_sprite.change_y
 
-        #Making the enemy follow the player precicely using trig
-        if self.enemy_follow == True:
-            self.enemy_sprite.change_x = math.cos(angle) * ENEMY_MOVEMENT_SPEED
-            self.enemy_sprite.change_y = math.sin(angle) * ENEMY_MOVEMENT_SPEED
-        #Stops the enemy if there is collision
-        elif self.enemy_follow == False:
-            self.enemy_sprite.change_x = 0
-            self.enemy_sprite.change_y = 0
+            #Records the enemy's position
+            start_x = self.enemy_sprite.center_x
+            start_y = self.enemy_sprite.center_y
+
+            #Records the player's position
+            dest_x = self.player_sprite.center_x
+            dest_y = self.player_sprite.center_y
+
+            #Calculates the x and y distance between the enemy and the player
+            dist_x = int(dest_x - start_x)
+            dist_y = int(dest_y - start_y)
+            #Using trig to find the angle difference between the player and enemy
+            angle = math.atan2(dist_y, dist_x)
             
-        #Creates player knockback if enemy collides with the player
-        if enemy_collision == True:
-            self.health -= self.enemy_attack
-            self.knockback_time = 0
-            self.knockback = True
-            self.invincible = True
-        
-        #Sets how far the knockback is going to be
-        if self.knockback == True:
+            #Checks for collision between the player and enemy
+            if self.invincible != True:
+                enemy_collision = arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
+            else:
+                enemy_collision = False
+
+            #Making the enemy follow the player precicely using trig
+            if self.enemy_follow == True:
+                self.enemy_sprite.change_x = math.cos(angle) * ENEMY_MOVEMENT_SPEED
+                self.enemy_sprite.change_y = math.sin(angle) * ENEMY_MOVEMENT_SPEED
+            #Stops the enemy if there is collision
+            elif self.enemy_follow == False:
+                self.enemy_sprite.change_x = 0
+                self.enemy_sprite.change_y = 0
+                
+            #Creates player knockback if enemy collides with the player
+            if enemy_collision == True:
+                self.health -= self.enemy_attack
+                self.knockback_time = 0
+                self.knockback = True
+                self.invincible = True
+            
+            #Sets how far the knockback is going to be
+            if self.knockback == True:
+                if self.knockback_time < 5:
+                    self.player_sprite.center_x += math.cos(angle) * PLAYER_DASH_SPEED
+                    self.player_sprite.center_y += math.sin(angle) * PLAYER_DASH_SPEED
+                    self.enemy_sprite.change_x -= math.sin(angle) * ENEMY_KNOCKBACK_SPEED
+                    self.enemy_sprite.change_y -= math.sin(angle) * ENEMY_KNOCKBACK_SPEED
+                    
+                    self.knockback_time += 1
+                if self.knockback_time == 5:
+                    self.knockback = False
+
+        #WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP    
+        '''if self.enemy_knockback == True:
             if self.knockback_time < 5:
-                self.player_sprite.center_x += math.cos(angle) * PLAYER_DASH_SPEED
-                self.player_sprite.center_y += math.sin(angle) * PLAYER_DASH_SPEED
                 self.enemy_sprite.change_x -= math.sin(angle) * ENEMY_KNOCKBACK_SPEED
                 self.enemy_sprite.change_y -= math.sin(angle) * ENEMY_KNOCKBACK_SPEED
-                
                 self.knockback_time += 1
             if self.knockback_time == 5:
-                self.knockback = False
-
+                self.enemy_knockback = False'''
+            
+        
         #Sets how long the invincible period is
         if self.invincible == True:
             if self.invincible_time < 60:
@@ -504,8 +520,8 @@ class MyGame(arcade.Window):
             if self.invincible_time == 60:
                 self.invincible = False
                 self.invincible_time = 0
-        
-        
+    
+    
         
         if self.can_shoot:
             if self.shoot_pressed:
@@ -556,38 +572,14 @@ class MyGame(arcade.Window):
                 
             
         # Update the bullet sprites
-        '''for bullet in self.scene[LAYER_NAME_BULLETS]:
-            hit_list = arcade.check_for_collision_with_lists(
-                bullet,
-                [
-                    self.scene[LAYER_NAME_ENEMIES],
-                    self.scene[LAYER_NAME_WALLS]
-                ],
-            )
-
-            if hit_list:
-                bullet.remove_from_sprite_lists()
-
-                for collision in hit_list:
-                    if self.enemy_sprite in collision.sprite_lists:
-                        # The collision was with an enemy
-                        self.enemy_health -= BULLET_DAMAGE
-
-                        if self.enemy_health <= 0:
-                            collision.remove_from_sprite_lists()
-                            # Change this later but it shoudl be the score or sumn
-                            self.door_unlock = True
-
-                        # Hit sound
-                        arcade.play_sound(self.hit_sound)
-
-                        return'''
+        
         for bullet in self.scene[LAYER_NAME_BULLETS]:
+            
+            '''This should change to colission with lists when you add more '''
             hit_list = arcade.check_for_collision_with_lists(
                 bullet,
                 [
-                    self.scene[LAYER_NAME_ENEMIES],
-                    self.scene[LAYER_NAME_WALLS]
+                    self.scene[LAYER_NAME_ENEMIES]
                 ],
             )
 
@@ -600,6 +592,7 @@ class MyGame(arcade.Window):
                         self.enemy_health -= BULLET_DAMAGE
                         print(f"ENEMYHEALTH{self.enemy_health}")
                         arcade.play_sound(self.hit_sound)
+                        
                         if self.enemy_health <= 0:
                             collision.remove_from_sprite_lists()
                             # Change this later but it shoudl be the score or sumn
@@ -610,7 +603,19 @@ class MyGame(arcade.Window):
 
                         break
                     else:
-                        print("enemy not in collision")
+                        print("enemy in collision but the code thinks its not")
+                        self.enemy_knockback = True
+                        self.enemy_health -= BULLET_DAMAGE
+                        arcade.play_sound(self.hit_sound)
+                        if self.enemy_health <= 0:
+                            collision.remove_from_sprite_lists()
+                            self.enemy_can_attack = False
+                            # Change this later but it shoudl be the score or sumn
+                            self.door_unlock = True
+                            arcade.play_sound(self.yay_sound)
+                        else:
+                            pass
+                        
                         
 
                 bullet.remove_from_sprite_lists()
