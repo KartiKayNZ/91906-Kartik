@@ -91,16 +91,20 @@ class PlayerCharacter(arcade.Sprite):
         self.up_pressed = False
         self.down_pressed = False
         
+        direction = 'down'
         # --- Load Textures ---
 
         # player assets
         main_path = "assets/player_sprites/player"
 
         # Load textures for idle standing
-        self.idle_textures = []
-        for i in range(6):
-            idle_texture = arcade.load_texture_pair(f"{main_path}_idle_{i}.png")[0]
-            self.idle_textures.append(idle_texture)
+        self.idle_textures = {}
+        for direction in ['up', 'down', 'left', 'right']:
+            texture_pair = []
+            for i in range(6):
+                idle_texture = arcade.load_texture_pair(f"{main_path}_idle_{direction}_{i}.png")[0]
+                texture_pair.append(idle_texture)
+            self.idle_textures[direction] = texture_pair
 
         # Load textures for walking
         self.walk_textures = {}
@@ -110,8 +114,10 @@ class PlayerCharacter(arcade.Sprite):
                 walk_texture = arcade.load_texture_pair(f"{main_path}_walk_{direction}_{i}.png")[0]
                 texture_pair.append(walk_texture)
             self.walk_textures[direction] = texture_pair
+        
         # Set the initial texture
-        self.texture = self.idle_textures[0]
+        self.texture = self.idle_textures[direction][self.cur_texture]
+        
 
 
     def update_animation(self, delta_time: float = 1 / 60):
@@ -129,13 +135,19 @@ class PlayerCharacter(arcade.Sprite):
             direction = 'up'
         elif self.change_y < 0:
             direction = 'down'
-
+        self.direction = direction
+        
         self.cur_texture += 1
         if self.cur_texture > 5:
             self.cur_texture = 0
+            
+        if self.change_x == 0 and self.change_y == 0:
+            self.texture = self.idle_textures[direction][self.cur_texture]
+        else:
+            self.texture = self.walk_textures[direction][self.cur_texture]
         
-        self.direction = direction
-        self.texture = self.walk_textures[direction][self.cur_texture]
+        print(direction)
+        
         
     
 class MyGame(arcade.Window):
@@ -159,6 +171,7 @@ class MyGame(arcade.Window):
 
         # A Camera that can be used for scrolling the screen
         self.camera = None
+        self.gui_camera = None
         
         #Enemy health
         self.enemy_max_health = 20
@@ -206,32 +219,41 @@ class MyGame(arcade.Window):
         self.heal_sound = arcade.load_sound("assets/heal.mp3")
         self.yay_sound = arcade.load_sound("assets/yay.mp3")
         
+        self.score_text = arcade.Text(
+            '',
+            10,
+            660,
+            arcade.csscolor.WHITE,
+            18,
+            
+        )
         
-        score_text = f"Score: {self.score}"
-        arcade.draw_text(
-            score_text,
+        self.health_text = arcade.Text(
+            '',
             10,
+            680,
+            arcade.csscolor.WHITE,
+            18,
+            
+        )
+        
+        self.enemy_health_text = arcade.Text(
+            '',
             10,
+            640,
             arcade.csscolor.WHITE,
             18,
         )
         
-        score_text = f"Health: {self.health}"
-        arcade.draw_text(
-            score_text,
-            10,
-            10,
-            arcade.csscolor.WHITE,
-            18,
-        )
-        
+
         arcade.set_background_color((234, 165, 108))
 
     def setup(self):
         """Set up the game here. Call this function to restart the game."""
 
         # Set up the Camera
-        self.camera = arcade.Camera(self.width, self.height)
+        self.camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
+        self.gui_camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
 
         # Name of map file to load
         map_name = "maps/level_1_big.tmx"
@@ -304,47 +326,31 @@ class MyGame(arcade.Window):
         # Draw our Scene
         self.scene.draw()
         
-        score_text = f"Score: {self.score}"
-        arcade.draw_text(
-            score_text,
-            10,
-            680,
-            arcade.csscolor.WHITE,
-            18,
-        )
+        self.gui_camera.use()
         
-        health_text = f"Health: {self.health}"
-        arcade.draw_text(
-            health_text,
-            10,
-            700,
-            arcade.csscolor.WHITE,
-            18,
-        )
+        self.health_text.draw()
+        self.score_text.draw()
+        self.enemy_health_text.draw()
         
-        enemy_health_text = f"Enemy Health: {self.enemy_health}"
-        arcade.draw_text(
-            enemy_health_text,
-            10,
-            720,
-            arcade.csscolor.WHITE,
-            18,
-        )
         
         
     def process_keychange(self):
         # Process left/right
         if self.right_pressed and not self.left_pressed:
             self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
+
         elif self.left_pressed and not self.right_pressed:
             self.player_sprite.change_x = -PLAYER_MOVEMENT_SPEED
+
         else:
             self.player_sprite.change_x = 0
         
         if self.up_pressed and not self.down_pressed:
             self.player_sprite.change_y = PLAYER_MOVEMENT_SPEED
+
         elif self.down_pressed and not self.up_pressed:
             self.player_sprite.change_y = -PLAYER_MOVEMENT_SPEED
+
         else:
             self.player_sprite.change_y = 0
 
@@ -620,11 +626,19 @@ class MyGame(arcade.Window):
 
                 bullet.remove_from_sprite_lists()
              
-            # Boundary code 
+             
         
         for bullet in self.scene[LAYER_NAME_BULLETS]:
             bullet.update()
         
+        # Update score text
+        self.score_text.text = f"Score: {self.score}"
+        self.health_text.text = f"Health: {self.health}"
+        self.enemy_health_text.text = f"Enemy Health: {self.enemy_health}"
+        
+        
+        
+        # Boundary Code
         if self.player_sprite.center_x > 2550:
             self.player_sprite.change_x = -5
         elif self.player_sprite.center_x < 0:
