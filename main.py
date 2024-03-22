@@ -92,6 +92,7 @@ class PlayerCharacter(arcade.Sprite):
         self.down_pressed = False
         
         direction = 'down'
+        self.direction = None
         # --- Load Textures ---
 
         # player assets
@@ -122,7 +123,7 @@ class PlayerCharacter(arcade.Sprite):
 
     def update_animation(self, delta_time: float = 1 / 60):
         if self.change_x == 0 and self.change_y == 0:
-            self.texture = self.idle_textures[self.character_face_direction]
+            self.texture = self.idle_textures[self.direction][self.cur_texture]
             return
 
         direction = ''
@@ -135,6 +136,7 @@ class PlayerCharacter(arcade.Sprite):
             direction = 'up'
         elif self.change_y < 0:
             direction = 'down'
+            
         self.direction = direction
         
         self.cur_texture += 1
@@ -146,7 +148,8 @@ class PlayerCharacter(arcade.Sprite):
         else:
             self.texture = self.walk_textures[direction][self.cur_texture]
         
-        print(direction)
+        print(f" Update_anmiation directino is {direction}")
+        print(f"The self.direction is {self.direction}")
         
         
     
@@ -187,8 +190,6 @@ class MyGame(arcade.Window):
         
         self.dashing = None
         
-        self.dashtime = 10
-        
         self.invincible = None
         self.invincible_time = 0
         
@@ -199,7 +200,9 @@ class MyGame(arcade.Window):
         self.door_unlock = False
         
         self.shoot_pressed = False    
-    
+        
+        self.player_direction = None
+            
         # Do we need to reset the score?
         self.reset_score = True
 
@@ -251,6 +254,8 @@ class MyGame(arcade.Window):
     def setup(self):
         """Set up the game here. Call this function to restart the game."""
 
+        self.player_direction = PlayerCharacter.direction()
+        
         # Set up the Camera
         self.camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
         self.gui_camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -430,6 +435,8 @@ class MyGame(arcade.Window):
 
         # Position the camera
         self.center_camera_to_player()
+        
+        self.player_direction.update()
 
         '''player_collision_list = arcade.check_for_collision_with_list(
             self.player_sprite,
@@ -545,7 +552,7 @@ class MyGame(arcade.Window):
                 bullet.center_x = self.player_sprite.center_x
                 bullet.center_y = self.player_sprite.center_y
                 
-                if self.player_sprite.change_x < 0:
+                '''if self.player_sprite.change_x < 0:
                     direction = 'left'
                     bullet.change_x = -BULLET_SPEED
                 elif self.player_sprite.change_x > 0:
@@ -559,11 +566,18 @@ class MyGame(arcade.Window):
                     bullet.change_y = -BULLET_SPEED
                 elif self.player_sprite.change_y == 0 and self.player_sprite.change_x == 0:
                     direction = 'down'
-                    bullet.change_y = -BULLET_SPEED
+                    bullet.change_y = -BULLET_SPEED'''
                 
-                print(direction)
-                print(BULLET_SPEED)
-                print(bullet.change_x)
+                if self.player_direction == 'left':
+                    bullet.change_x = -BULLET_SPEED
+                elif self.player_direction == 'right':
+                    bullet.change_x = BULLET_SPEED
+                if self.player_direction == 'up':
+                    bullet.change_y = BULLET_SPEED
+                elif self.player_direction == 'down':
+                    bullet.change_y = -BULLET_SPEED
+
+                print(self.player_direction)
 
                 #self.scene.add_sprite(LAYER_NAME_BULLETS, bullet)
 
@@ -576,7 +590,7 @@ class MyGame(arcade.Window):
                 self.shoot_timer = 0
         
                 
-            
+        
         # Update the bullet sprites
         
         for bullet in self.scene[LAYER_NAME_BULLETS]:
