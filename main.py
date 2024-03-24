@@ -701,7 +701,13 @@ class gameView(arcade.Window):
         elif self.player_sprite.center_y < 0:
             self.player_sprite.change_y = 5
             
-        
+        if self.door_unlock == True:
+            for door in LAYER_NAME_DOORS:
+                door.remove_from_sprite_list()
+                if door not in LAYER_NAME_DOORS:
+                    print("door removed succesfuly")
+                else:
+                    print("door still there blud")
 def main():
     """Main function"""
     MainMenu()
