@@ -5,6 +5,7 @@ import arcade
 import time
 import math
 import random
+import arcade.gui
 
 
 
@@ -90,9 +91,9 @@ class PlayerCharacter(arcade.Sprite):
         self.right_pressed = False
         self.up_pressed = False
         self.down_pressed = False
-        
-        direction = 'down'
         self.direction = None
+        direction = 'down'
+        self.direction = direction
         # --- Load Textures ---
 
         # player assets
@@ -149,11 +150,65 @@ class PlayerCharacter(arcade.Sprite):
             self.texture = self.walk_textures[direction][self.cur_texture]
         
         print(f" Update_anmiation directino is {direction}")
-        print(f"The self.direction is {self.direction}")
+        print(f"The self.direction (PLAYER CLASS) is {self.direction}")
         
         
+class QuitButton(arcade.gui.UIFlatButton):
+    def on_click(self, event: arcade.gui.UIOnClickEvent):
+        arcade.exit()
+        
+class StartButton(arcade.gui.UIFlatButton):
+    def on_click(self, event: arcade.gui.UIOnClickEvent):
+        arcade.close_window()
+        window = gameView()
+        window.setup()
+        arcade.run()
     
-class MyGame(arcade.Window):
+class MainMenu(arcade.Window):
+    """The main menu of the game"""
+
+    def __init__(self):
+        super().__init__(
+            SCREEN_WIDTH,
+            SCREEN_HEIGHT,
+            "UIFlatButton Example",
+            center_window = True,
+            )
+
+        # --- Required for all code that uses UI element,
+        # a UIManager to handle the UI.
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+
+        # Set background color
+        arcade.set_background_color(arcade.color.DARK_BLUE_GRAY)
+
+        # Create a vertical BoxGroup to align buttons
+        self.v_box = arcade.gui.UIBoxLayout()
+
+        # Create the buttons
+        start_button = StartButton(text="Start Game", width=200)
+        self.v_box.add(start_button.with_space_around(bottom=20))
+
+        # Again, method 1. Use a child class to handle events.
+        quit_button = QuitButton(text="Quit", width=200)
+        self.v_box.add(quit_button)
+
+        # Create a widget to hold the v_box widget, that will center the buttons
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="center_x",
+                anchor_y="center_y",
+                child=self.v_box)
+        )
+
+
+
+    def on_draw(self):
+        self.clear()
+        self.manager.draw()
+
+class gameView(arcade.Window):
     """
     Main application class.
     """
@@ -254,7 +309,6 @@ class MyGame(arcade.Window):
     def setup(self):
         """Set up the game here. Call this function to restart the game."""
 
-        self.player_direction = PlayerCharacter.direction()
         
         # Set up the Camera
         self.camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -318,7 +372,7 @@ class MyGame(arcade.Window):
             self.player_sprite, walls=self.scene["Walls"]
             )
         
-        
+        self.player_direction = self.player_sprite.direction
     def on_draw(self):
         """Render the screen."""
 
@@ -436,7 +490,6 @@ class MyGame(arcade.Window):
         # Position the camera
         self.center_camera_to_player()
         
-        self.player_direction.update()
 
         '''player_collision_list = arcade.check_for_collision_with_list(
             self.player_sprite,
@@ -551,30 +604,15 @@ class MyGame(arcade.Window):
                 
                 bullet.center_x = self.player_sprite.center_x
                 bullet.center_y = self.player_sprite.center_y
+
                 
-                '''if self.player_sprite.change_x < 0:
-                    direction = 'left'
+                if self.player_sprite.direction == 'left':
                     bullet.change_x = -BULLET_SPEED
-                elif self.player_sprite.change_x > 0:
-                    direction = 'right'
+                elif self.player_sprite.direction == 'right':
                     bullet.change_x = BULLET_SPEED
-                if self.player_sprite.change_y > 0:
-                    direction = 'up'
+                if self.player_sprite.direction == 'up':
                     bullet.change_y = BULLET_SPEED
-                elif self.player_sprite.change_y < 0:
-                    direction = 'down'
-                    bullet.change_y = -BULLET_SPEED
-                elif self.player_sprite.change_y == 0 and self.player_sprite.change_x == 0:
-                    direction = 'down'
-                    bullet.change_y = -BULLET_SPEED'''
-                
-                if self.player_direction == 'left':
-                    bullet.change_x = -BULLET_SPEED
-                elif self.player_direction == 'right':
-                    bullet.change_x = BULLET_SPEED
-                if self.player_direction == 'up':
-                    bullet.change_y = BULLET_SPEED
-                elif self.player_direction == 'down':
+                elif self.player_sprite.direction == 'down':
                     bullet.change_y = -BULLET_SPEED
 
                 print(self.player_direction)
@@ -650,7 +688,7 @@ class MyGame(arcade.Window):
         self.health_text.text = f"Health: {self.health}"
         self.enemy_health_text.text = f"Enemy Health: {self.enemy_health}"
         
-        
+        print(self.player_sprite.direction)
         
         # Boundary Code
         if self.player_sprite.center_x > 2550:
@@ -662,10 +700,11 @@ class MyGame(arcade.Window):
             self.player_sprite.change_y = -5
         elif self.player_sprite.center_y < 0:
             self.player_sprite.change_y = 5
+            
+        
 def main():
     """Main function"""
-    window = MyGame()
-    window.setup()
+    MainMenu()
     arcade.run()
 
 
