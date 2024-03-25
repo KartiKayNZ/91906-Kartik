@@ -39,10 +39,18 @@
         },
         "level_1_big.tmx": {
             "scale": 0.92921875,
-            "selectedLayer": 4,
+            "selectedLayer": 0,
             "viewCenter": {
                 "x": 640.8609382882125,
-                "y": 360.51790818900287
+                "y": 365.8987724903313
+            }
+        },
+        "level_2.tmx": {
+            "scale": 0.8259722222222222,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 641.0627206995124,
+                "y": 368.0511182108627
             }
         },
         "sampleMap.tmx": {
@@ -74,6 +82,7 @@
     "project": "topdown_maps.tiled-project",
     "property.type": "int",
     "recentFiles": [
+        "level_1_big.tmx",
         "sampleSheet.tsx",
         "TopDownTilesKennyS.tsx",
         "level_1.tmx",

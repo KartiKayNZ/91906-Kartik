@@ -22,6 +22,7 @@ PLAYER_START_Y = 100
 CHARACTER_SCALING = 2
 TILE_SCALING = 2
 ENEMY_SCALING = 1.5
+PORTAL_SCALING = 0.25
 
 # Movement speed of player, in pixels per frame
 PLAYER_MOVEMENT_SPEED = 5
@@ -43,10 +44,11 @@ LAYER_NAME_WALLS = "Walls"
 LAYER_NAME_HEALTH_POT = "Health Pot"
 LAYER_NAME_TRACKS = "Tracks"
 LAYER_NAME_BACKGROUND = "Background"
-LAYER_NAME_DOORS = "Doors"
 LAYER_NAME_ENEMIES = "Enemy"
 LAYER_NAME_PLAYER = "Player"
 LAYER_NAME_BULLETS = "Bullets"
+LAYER_NAME_ENEMIES = "Enemies"
+LAYER_NAME_PORTAL = "Portal"
 
 # Direction List
 direction = [0, 0]
@@ -252,7 +254,6 @@ class gameView(arcade.Window):
         self.knockback_time = 0
         self.enemy_knockback = False
         
-        self.door_unlock = False
         
         self.shoot_pressed = False    
         
@@ -261,6 +262,10 @@ class gameView(arcade.Window):
         # Do we need to reset the score?
         self.reset_score = True
 
+        self.level = 1
+        
+        self.level_complete = None
+        
         # Keep track of the score
         self.score = 0
         
@@ -315,7 +320,7 @@ class gameView(arcade.Window):
         self.gui_camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
 
         # Name of map file to load
-        map_name = "maps/level_1_big.tmx"
+        map_name = f"maps/level_{self.level}.tmx"
 
         # Layer specific options are defined based on Layer names in a dictionary
         # Doing this will make the SpriteList for the platforms layer
@@ -325,9 +330,6 @@ class gameView(arcade.Window):
                 "use_spatial_hash": True,
             },
             LAYER_NAME_HEALTH_POT: {
-                "use_spatial_hash": True,
-            },
-            LAYER_NAME_DOORS:{
                 "use_spatial_hash": True,
             },
         }
@@ -357,6 +359,9 @@ class gameView(arcade.Window):
         # Shooting mechanics
         self.can_shoot = True
         self.shoot_timer = 0
+        
+        # Making sure level not complte
+        self.level_complete = False
         
         
         #so bullets have a home
@@ -470,13 +475,6 @@ class gameView(arcade.Window):
     
     def attack(self, game):
         enemy = self.enemy_sprite  # Get the enemy sprite
-
-        '''if math.sqrt(enemy_distance) <= 50:
-            if arcade.check_for_collision(self, enemy):
-                self.enemy_health -= 5
-                if self.enemy_health <= 0:
-                    enemy.remove_from_sprite_lists()
-                    self.door_unlock = True'''
     
     def on_update(self, delta_time):
         """Movement and game logic"""
@@ -654,7 +652,7 @@ class gameView(arcade.Window):
                         if self.enemy_health <= 0:
                             collision.remove_from_sprite_lists()
                             # Change this later but it shoudl be the score or sumn
-                            self.door_unlock = True
+                            #self.door_unlock = True
 
                         # Hit sound
                         arcade.play_sound(self.hit_sound)
@@ -669,8 +667,9 @@ class gameView(arcade.Window):
                             collision.remove_from_sprite_lists()
                             self.enemy_can_attack = False
                             # Change this later but it shoudl be the score or sumn
-                            self.door_unlock = True
+                            #self.door_unlock = True
                             arcade.play_sound(self.yay_sound)
+                            self.score += 100
                         else:
                             pass
                         
@@ -700,14 +699,31 @@ class gameView(arcade.Window):
             self.player_sprite.change_y = -5
         elif self.player_sprite.center_y < 0:
             self.player_sprite.change_y = 5
+
+        if self.score >= 100:
+            self.level_complete = True
+        
+        if self.level_complete == True:
+            # Portal sprite
+            portal_img = "assets/portal_sprites/portal_0.png"
+            self.portal_sprite = arcade.Sprite(portal_img, PORTAL_SCALING)
+            self.portal_sprite.center_x = 750
+            self.portal_sprite.center_y = 750
+            self.scene.add_sprite(LAYER_NAME_PORTAL, self.portal_sprite)
             
-        if self.door_unlock == True:
-            for door in LAYER_NAME_DOORS:
-                door.remove_from_sprite_list()
-                if door not in LAYER_NAME_DOORS:
-                    print("door removed succesfuly")
-                else:
-                    print("door still there blud")
+            portal_hit_list = arcade.check_for_collision_with_list(
+                self.player_sprite, self.scene[LAYER_NAME_PORTAL]
+            )
+            
+            for portal in portal_hit_list:
+                portal.remove_from_sprite_lists()
+                self.level += 1
+                self.setup()
+                self.level_complete = False
+            
+                
+            
+            
 def main():
     """Main function"""
     MainMenu()
