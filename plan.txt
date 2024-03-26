@@ -1,0 +1,21 @@
+TODO
+1. Add a 'Quest' to the top right of the screen that will say somthing like, collect the magic 
+    orb to gain powers and kill the enemy. OR the player can pickup the sword which lets the player gain the 
+    ability to slash the sword and do the sword attack. 
+2. Once a key is collected maybe multiple enemies spawn
+    at spawn points. Use the enemy code that Clepto gave you. It could be like search for the key, 
+    and you would have to look everywhere maybe somthing like press E to search (dont have to)
+
+3. Could do somthing like the ghost cant see you unless
+    you move? And the ghost would be crazy fast aswell. There could be obstaces and spikes
+
+3. Fix the load screen and make it look nicer
+4. Try to fix load times because they're very slow
+5. Try to add animations for the the 
+
+SHOULD DO
+1. Separate enemy and player sprites into their own classes and make an entity class that
+    the enemy and player both supersede form
+2. Turn down opacity of ghost sprite
+3. Add animations for the idle fix that because idk why it doesn work
+4. Try to make animations slower
