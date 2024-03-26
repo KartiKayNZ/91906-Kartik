@@ -1,15 +1,16 @@
 """
-Top Down Game
+Heart Soldiers, a top down game where you manouvre through levels
+Each level is a different environment to find the things you need to find
 """
+
+# Importing the libraries we need
 import arcade
-import time
 import math
-import random
 import arcade.gui
 
 
 
-
+# Window constants 
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 SCREEN_TITLE = "Heart Soldiers"
@@ -21,7 +22,7 @@ PLAYER_START_Y = 100
 # Constants used to scale our sprites from their original size
 CHARACTER_SCALING = 2
 TILE_SCALING = 2
-ENEMY_SCALING = 1.5
+ENEMY_SCALING = 0.25
 PORTAL_SCALING = 0.25
 
 # Movement speed of player, in pixels per frame
@@ -29,8 +30,9 @@ PLAYER_MOVEMENT_SPEED = 5
 PLAYER_DASH_SPEED = 15
 GRAVITY = 1
 DASH_MULTIPLIER = 4
-ENEMY_MOVEMENT_SPEED = 2
+ENEMY_MOVEMENT_SPEED = 4
 ENEMY_KNOCKBACK_SPEED = 10
+ENEMY_ATTACK = 50
 
 # Shooting Constants
 SPRITE_SCALING_LASER = 0.1
@@ -38,8 +40,7 @@ SHOOT_SPEED = 15
 BULLET_SPEED = 12
 BULLET_DAMAGE = 25
 
-# Portal Spawn Position 
-
+# Portal Spawn Positions 
 PORTAL_SPAWN_X_L1 = 750
 PORTAL_SPAWN_Y_L1 = 650
 
@@ -61,7 +62,7 @@ LAYER_NAME_BULLETS = "Bullets"
 LAYER_NAME_ENEMIES = "Enemies"
 LAYER_NAME_PORTAL = "Portal"
 
-# Direction List
+# Direction List for player movement
 direction = [0, 0]
 
 # Value of health pot
@@ -74,6 +75,7 @@ UP_FACING = 2
 DOWN_FACING = 3
 IDLE_FACING = 4
 
+
 def load_texture_pair(filename):
     """
     Load a texture pair, with the second being a mirror image.
@@ -85,14 +87,21 @@ def load_texture_pair(filename):
 
 
 class PlayerCharacter(arcade.Sprite):
-    """Player Sprite"""
+    """
+    A class used for all attributes related to the player sprite
+    """
 
     def __init__(self):
+        '''
+        This function is what is passed through when the player initialises. 
+        This defines all the variables needed within the PlayerCharacter
+        '''
 
         # Set up parent class
         super().__init__()
 
-        # Default to face-right
+        # Default position for the character is to face downards 
+        # MIGHT NOT NEED
         self.character_face_direction = IDLE_FACING
 
         # Used for flipping between image sequences
@@ -136,8 +145,13 @@ class PlayerCharacter(arcade.Sprite):
 
 
     def update_animation(self, delta_time: float = 1 / 5):
+        '''
+        This function is dedicated to updating animations in the code
+        This is passed through on_update() to update every frame
+        '''
         if self.change_x == 0 and self.change_y == 0:
             self.texture = self.idle_textures[self.direction][self.cur_texture]
+            print("line 153 stationary")
             return
 
         direction = ''
@@ -156,20 +170,37 @@ class PlayerCharacter(arcade.Sprite):
         self.cur_texture += 1
         if self.cur_texture > 5:
             self.cur_texture = 0
-            
+        
+        
+        
         if self.change_x == 0 and self.change_y == 0:
             self.texture = self.idle_textures[direction][self.cur_texture]
+            print("Stationary")
         else:
             self.texture = self.walk_textures[direction][self.cur_texture]
+            print("Moving")
     
         
         
 class QuitButton(arcade.gui.UIFlatButton):
+    '''
+    This class is for the Quit button on the MainMenu menu
+    '''
     def on_click(self, event: arcade.gui.UIOnClickEvent):
+        '''
+        If the button is clicked, then the code will quit
+        '''
         arcade.exit()
         
 class StartButton(arcade.gui.UIFlatButton):
+    '''
+    This class is for the start button on the MainMenu
+    '''
     def on_click(self, event: arcade.gui.UIOnClickEvent):
+        '''
+        If the code is clicked, then this will close the MainMenu window, then
+        run the actual arcade window with the game in it
+        '''
         arcade.close_window()
         window = gameView()
         window.setup()
@@ -246,7 +277,7 @@ class gameView(arcade.Window):
         self.enemy_health = 0
 
         #Enemy attack
-        self.enemy_attack = 5
+        self.enemy_attack = ENEMY_ATTACK
 
         #Enemy following player
         self.enemy_follow = True
@@ -363,7 +394,7 @@ class gameView(arcade.Window):
         self.scene.add_sprite_list(LAYER_NAME_BULLETS)
         
         #Enemy sprite
-        enemy_img = "assets/enemy_sprites/enemy_08.png"
+        enemy_img = "assets/ghost_sprites/ghost_idle_0.png"
         self.enemy_sprite = arcade.Sprite(enemy_img, ENEMY_SCALING)
         self.enemy_sprite.center_x = 400
         self.enemy_sprite.center_y = 450
@@ -635,7 +666,11 @@ class gameView(arcade.Window):
                 self.can_shoot = True
                 self.shoot_timer = 0
         
-                
+        if self.health <= 0:
+            self.player_sprite.center_x = PLAYER_START_X
+            self.player_sprite.center_y = PLAYER_START_Y
+            self.health = 100
+            
         
         # Update the bullet sprites
         
