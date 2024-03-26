@@ -12,7 +12,7 @@ import arcade.gui
 
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
-SCREEN_TITLE = "Platformer"
+SCREEN_TITLE = "Heart Soldiers"
 
 # The position where the player starts
 PLAYER_START_X = 40
@@ -41,13 +41,13 @@ BULLET_DAMAGE = 25
 # Portal Spawn Position 
 
 PORTAL_SPAWN_X_L1 = 750
-PORTALSPAWNT_Y_L1 = 650
+PORTAL_SPAWN_Y_L1 = 650
 
-PORTAL_SPAWN_X_L2 = 1000
-PORTAL_SPAWN_Y_L2 = 150
+PORTAL_SPAWN_X_L2 = 1650
+PORTAL_SPAWN_Y_L2 = 300
 
 PORTAL_SPAWN_X_L3 = 650
-PORTAL_SPAWN_X_L4 = 650
+PORTAL_SPAWN_Y_L3 = 650
 
 
 # Layer names from the tiled map
@@ -243,8 +243,7 @@ class gameView(arcade.Window):
         self.gui_camera = None
         
         #Enemy health
-        self.enemy_max_health = 20
-        self.enemy_health = 100
+        self.enemy_health = 0
 
         #Enemy attack
         self.enemy_attack = 5
@@ -268,6 +267,9 @@ class gameView(arcade.Window):
         self.shoot_pressed = False    
         
         self.player_direction = None
+        
+        self.portal_spawn_x = 0
+        self.portal_spawn_y = 0
             
         # Do we need to reset the score?
         self.reset_score = True
@@ -373,6 +375,9 @@ class gameView(arcade.Window):
         self.score = 0
         # Making sure level not complte
         self.level_complete = False
+        
+        self.enemy_health = 100
+        self.enemy_can_attack = True
         
         self.portal_spawn = False
         #so bullets have a home
@@ -484,8 +489,8 @@ class gameView(arcade.Window):
 
         self.camera.move_to(player_centered)
     
-    def attack(self, game):
-        enemy = self.enemy_sprite  # Get the enemy sprite
+    '''def attack(self, game):
+        enemy = self.enemy_sprite  # Get the enemy sprite'''
     
     def on_update(self, delta_time):
         """Movement and game logic"""
@@ -709,11 +714,22 @@ class gameView(arcade.Window):
             # Portal sprite
             portal_img = "assets/portal_sprites/portal_0.png"
             self.portal_sprite = arcade.Sprite(portal_img, PORTAL_SCALING)
-            self.portal_sprite.center_x = PORTAL_SPAWN_X_L1 
-            self.portal_sprite.center_y = PORTAL_SPAWN_Y_L1
-            '''ASK SIR IN CLASS HOW TO PULL THIS OFF'''
-            #self.portal_sprite.center_x = PORTAL_SPAWN_X_L + {self.level} 
-            #self.portal_sprite.center_y = PORTAL_SPAWN_Y_L + {self.level}
+
+            # FIX THIS LATER
+            if self.level == 1:
+                self.portal_spawn_x = PORTAL_SPAWN_X_L1
+                self.portal_spawn_y = PORTAL_SPAWN_Y_L1
+            elif self.level == 2:
+                self.portal_spawn_x = PORTAL_SPAWN_X_L2
+                self.portal_spawn_y = PORTAL_SPAWN_Y_L2
+            elif self.level == 3:
+                self.portal_spawn_x = PORTAL_SPAWN_X_L3
+                self.portal_spawn_y = PORTAL_SPAWN_Y_L3
+            else: 
+                print("OUT OF RANGE LEVELS")
+            
+            self.portal_sprite.center_x = self.portal_spawn_x
+            self.portal_sprite.center_y = self.portal_spawn_y 
             self.scene.add_sprite(LAYER_NAME_PORTAL, self.portal_sprite)
             portal_hit_list = arcade.check_for_collision_with_list(
                 self.player_sprite, self.scene[LAYER_NAME_PORTAL]
