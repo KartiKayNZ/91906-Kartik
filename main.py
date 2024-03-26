@@ -360,6 +360,7 @@ class gameView(arcade.Window):
         self.can_shoot = True
         self.shoot_timer = 0
         
+        self.score = 0
         # Making sure level not complte
         self.level_complete = False
         
@@ -702,6 +703,7 @@ class gameView(arcade.Window):
 
         if self.score >= 100:
             self.level_complete = True
+            self.score = 0
         
         if self.level_complete == True:
             # Portal sprite
@@ -720,6 +722,11 @@ class gameView(arcade.Window):
                 self.level += 1
                 self.setup()
                 self.level_complete = False
+                
+        elif self.level_complete == False:
+            print("lever compelte is set to false and the guy went into the portal ")
+        else:
+            print("chat how did we get here")
             
                 
             
