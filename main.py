@@ -150,9 +150,7 @@ class PlayerCharacter(arcade.Sprite):
             self.texture = self.idle_textures[direction][self.cur_texture]
         else:
             self.texture = self.walk_textures[direction][self.cur_texture]
-        
-        print(f" Update_anmiation directino is {direction}")
-        print(f"The self.direction (PLAYER CLASS) is {self.direction}")
+    
         
         
 class QuitButton(arcade.gui.UIFlatButton):
@@ -254,6 +252,7 @@ class gameView(arcade.Window):
         self.knockback_time = 0
         self.enemy_knockback = False
         
+        self.portal_spawn = None
         
         self.shoot_pressed = False    
         
@@ -364,7 +363,7 @@ class gameView(arcade.Window):
         # Making sure level not complte
         self.level_complete = False
         
-        
+        self.portal_spawn = False
         #so bullets have a home
         #self.bullet_list = arcade.SpriteList(use_spatial_hash=True)
         
@@ -596,11 +595,6 @@ class gameView(arcade.Window):
                     SPRITE_SCALING_LASER,
                 )
                 self.scene.add_sprite(LAYER_NAME_BULLETS, bullet)
-                if bullet in self.scene[LAYER_NAME_BULLETS]:
-                    print("success")
-                else:
-                    print("failure")
-                
                 bullet.center_x = self.player_sprite.center_x
                 bullet.center_y = self.player_sprite.center_y
 
@@ -614,7 +608,6 @@ class gameView(arcade.Window):
                 elif self.player_sprite.direction == 'down':
                     bullet.change_y = -BULLET_SPEED
 
-                print(self.player_direction)
 
                 #self.scene.add_sprite(LAYER_NAME_BULLETS, bullet)
 
@@ -647,7 +640,6 @@ class gameView(arcade.Window):
                     if self.enemy_sprite in collision.sprite_lists:
                         # The collision was with an enemy
                         self.enemy_health -= BULLET_DAMAGE
-                        print(f"ENEMYHEALTH{self.enemy_health}")
                         arcade.play_sound(self.hit_sound)
                         
                         if self.enemy_health <= 0:
@@ -671,6 +663,7 @@ class gameView(arcade.Window):
                             #self.door_unlock = True
                             arcade.play_sound(self.yay_sound)
                             self.score += 100
+                            self.level_complete = True
                         else:
                             pass
                         
@@ -688,7 +681,6 @@ class gameView(arcade.Window):
         self.health_text.text = f"Health: {self.health}"
         self.enemy_health_text.text = f"Enemy Health: {self.enemy_health}"
         
-        print(self.player_sprite.direction)
         
         # Boundary Code
         if self.player_sprite.center_x > 2550:
@@ -701,27 +693,27 @@ class gameView(arcade.Window):
         elif self.player_sprite.center_y < 0:
             self.player_sprite.change_y = 5
 
-        if self.score >= 100:
-            self.level_complete = True
-            self.score = 0
         
-        if self.level_complete == True:
+        if self.level_complete == True and self.portal_spawn == False:
             # Portal sprite
             portal_img = "assets/portal_sprites/portal_0.png"
             self.portal_sprite = arcade.Sprite(portal_img, PORTAL_SCALING)
             self.portal_sprite.center_x = 750
             self.portal_sprite.center_y = 750
             self.scene.add_sprite(LAYER_NAME_PORTAL, self.portal_sprite)
-            
             portal_hit_list = arcade.check_for_collision_with_list(
                 self.player_sprite, self.scene[LAYER_NAME_PORTAL]
             )
             
             for portal in portal_hit_list:
                 portal.remove_from_sprite_lists()
-                self.level += 1
-                self.setup()
-                self.level_complete = False
+            self.level += 1
+            self.setup()
+            self.level_complete = False
+            self.portal_spawn = True
+            print("PORTAL HAS BEEN DELETED ")
+            print(self.level_complete)
+                
                 
         elif self.level_complete == False:
             print("lever compelte is set to false and the guy went into the portal ")
