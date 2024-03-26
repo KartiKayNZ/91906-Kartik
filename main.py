@@ -38,6 +38,17 @@ SHOOT_SPEED = 15
 BULLET_SPEED = 12
 BULLET_DAMAGE = 25
 
+# Portal Spawn Position 
+
+PORTAL_SPAWN_X_L1 = 750
+PORTALSPAWNT_Y_L1 = 650
+
+PORTAL_SPAWN_X_L2 = 1000
+PORTAL_SPAWN_Y_L2 = 150
+
+PORTAL_SPAWN_X_L3 = 650
+PORTAL_SPAWN_X_L4 = 650
+
 
 # Layer names from the tiled map
 LAYER_NAME_WALLS = "Walls"
@@ -124,7 +135,7 @@ class PlayerCharacter(arcade.Sprite):
         
 
 
-    def update_animation(self, delta_time: float = 1 / 60):
+    def update_animation(self, delta_time: float = 1 / 5):
         if self.change_x == 0 and self.change_y == 0:
             self.texture = self.idle_textures[self.direction][self.cur_texture]
             return
@@ -694,12 +705,15 @@ class gameView(arcade.Window):
             self.player_sprite.change_y = 5
 
         
-        if self.level_complete == True and self.portal_spawn == False:
+        if self.level_complete == True:
             # Portal sprite
             portal_img = "assets/portal_sprites/portal_0.png"
             self.portal_sprite = arcade.Sprite(portal_img, PORTAL_SCALING)
-            self.portal_sprite.center_x = 750
-            self.portal_sprite.center_y = 750
+            self.portal_sprite.center_x = PORTAL_SPAWN_X_L1 
+            self.portal_sprite.center_y = PORTAL_SPAWN_Y_L1
+            '''ASK SIR IN CLASS HOW TO PULL THIS OFF'''
+            #self.portal_sprite.center_x = PORTAL_SPAWN_X_L + {self.level} 
+            #self.portal_sprite.center_y = PORTAL_SPAWN_Y_L + {self.level}
             self.scene.add_sprite(LAYER_NAME_PORTAL, self.portal_sprite)
             portal_hit_list = arcade.check_for_collision_with_list(
                 self.player_sprite, self.scene[LAYER_NAME_PORTAL]
@@ -707,19 +721,23 @@ class gameView(arcade.Window):
             
             for portal in portal_hit_list:
                 portal.remove_from_sprite_lists()
-            self.level += 1
-            self.setup()
-            self.level_complete = False
-            self.portal_spawn = True
-            print("PORTAL HAS BEEN DELETED ")
-            print(self.level_complete)
-                
+                self.portal_spawn = True
+                print("PORTAL HAS BEEN DELETED ")
+        
+            
                 
         elif self.level_complete == False:
             print("lever compelte is set to false and the guy went into the portal ")
         else:
             print("chat how did we get here")
-            
+        
+        if self.portal_spawn == True:
+            self.level += 1
+            self.setup()
+            self.level_complete = False
+            self.portal_spawn = False
+            print(self.level_complete)
+                
                 
             
             
