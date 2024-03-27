@@ -31,3 +31,4 @@ OKAY NEW TO DO LIST:
 2. Add the animations for the player slash, also the bullet itself
 3. Need to add more enemies on the last level and fix the tilemap. 
 4. Need to also clean up the title pages.
+5. Also figure out texture pairs

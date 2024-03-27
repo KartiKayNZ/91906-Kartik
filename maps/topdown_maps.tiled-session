@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "meow.tsx",
     "expandedProjectPaths": [
         "."
     ],
@@ -26,15 +26,19 @@
             "scaleInDock": 2,
             "scaleInEditor": 4
         },
+        "enemy.tsx": {
+            "scaleInDock": 1
+        },
         "items.tsx": {
-            "dynamicWrapping": true
+            "dynamicWrapping": true,
+            "scaleInDock": 1
         },
         "level_1.tmx": {
-            "scale": 1.7792708333333331,
+            "scale": 0.75,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 191.37052865757272,
-                "y": 248.41636906504306
+                "x": 415.33333333333337,
+                "y": 521.3333333333333
             }
         },
         "level_1_big.tmx": {
@@ -53,6 +57,14 @@
                 "y": 368.0511182108627
             }
         },
+        "meow.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "player.tsx": {
+            "scaleInDock": 1
+        },
         "sampleMap.tmx": {
             "scale": 1.8465625,
             "selectedLayer": 0,
@@ -67,7 +79,7 @@
             "scaleInEditor": 1
         }
     },
-    "last.imagePath": "H:/2024 Python Internal/91906-Kartik/assets/kenney_tiny-dungeon/Tiles",
+    "last.imagePath": "H:/2024 Python Internal/91906-Kartik/maps",
     "map.height": 45,
     "map.lastUsedFormat": "tmx",
     "map.layerDataFormat": null,
@@ -77,16 +89,18 @@
     "openFiles": [
         "TopDownTilesKennyS.tsx",
         "level_1.tmx",
-        "sampleMap.tmx"
+        "sampleMap.tmx",
+        "meow.tsx"
     ],
     "project": "topdown_maps.tiled-project",
     "property.type": "int",
     "recentFiles": [
-        "level_1_big.tmx",
-        "sampleSheet.tsx",
         "TopDownTilesKennyS.tsx",
         "level_1.tmx",
-        "sampleMap.tmx"
+        "sampleMap.tmx",
+        "meow.tsx",
+        "level_1_big.tmx",
+        "sampleSheet.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.type": 1

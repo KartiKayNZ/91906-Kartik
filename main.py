@@ -29,7 +29,7 @@ ENEMY_SCALING = 1.5
 PORTAL_SCALING = 0.25
 
 # Movement speed of player, in pixels per frame
-PLAYER_MOVEMENT_SPEED = 20
+PLAYER_MOVEMENT_SPEED = 25
 PLAYER_DASH_SPEED = 15
 GRAVITY = 1
 DASH_MULTIPLIER = 4
@@ -119,7 +119,7 @@ class PlayerCharacter(arcade.Sprite):
         self.up_pressed = False
         self.down_pressed = False
         self.direction = "down"
-
+        self.game = GameView()
         #self.direction = direction
         
         self.animation_timer = 0
@@ -128,6 +128,12 @@ class PlayerCharacter(arcade.Sprite):
         # player assets
         main_path = "assets/player_sprites/player"
 
+        
+        
+        '''YOU CAN CONDENSE THIS INTO LESS CODE MOST DEFINITELY'''
+        
+        
+        
         # Load textures for idle standing
         self.idle_textures = {}
         for direction in ['up', 'down', 'left', 'right']:
@@ -146,6 +152,16 @@ class PlayerCharacter(arcade.Sprite):
                 texture_pair.append(walk_texture)
             self.walk_textures[direction] = texture_pair
         
+        
+        # sword textures brokey
+        self.sword_textures = {}
+        for direction in ['up', 'down', 'left', 'right']:
+            texture_pair = []
+            for i in range(4):
+                sword_texture = arcade.load_texture_pair(f"{main_path}_swing_{direction}_{i}.png")[0]
+                texture_pair.append(sword_texture)
+            self.sword_textures[direction] = texture_pair
+        
         # Set the initial texture
         self.texture = self.idle_textures[self.direction][self.cur_texture]
     
@@ -159,11 +175,22 @@ class PlayerCharacter(arcade.Sprite):
         
         
         
-        if self.change_x == 0 and self.change_y == 0:
+        '''if self.change_x == 0 and self.change_y == 0:
             self.texture = self.idle_textures[self.direction][self.cur_texture]
-            #print("line 153 stationary")
+            #print("line 153 stationary")'''
             
-
+        if self.change_x == 0 and self.change_y == 0:
+            
+            self.texture = self.idle_textures[self.direction][self.cur_texture]
+            max_texture = 5
+        elif self.game.can_shoot and self.game.shoot_pressed:
+            print("I CAN SHOOT AND SHOT")
+            self.texture = self.sword_textures[self.direction][self.cur_texture]
+            max_texture = 3
+        else:
+            self.texture = self.walk_textures[self.direction][self.cur_texture]
+            max_texture = 5
+        
         
         
         if self.change_x < 0:
@@ -179,19 +206,14 @@ class PlayerCharacter(arcade.Sprite):
         if self.animation_timer >= 0.08:
             self.animation_timer -= 0.08
             self.cur_texture += 1
-            if self.cur_texture > 5:
+            if self.cur_texture > max_texture:
                 self.cur_texture = 0
         else:
             pass
         
         
         
-        if self.change_x == 0 and self.change_y == 0:
-            self.texture = self.idle_textures[self.direction][self.cur_texture]
-            #print("Stationary")
-        else:
-            self.texture = self.walk_textures[self.direction][self.cur_texture]
-            #print("Moving")
+        
     
         
         
@@ -214,11 +236,14 @@ class StartButton(arcade.gui.UIFlatButton):
         If the code is clicked, then this will close the MainMenu window, then
         run the actual arcade window with the game in it
         '''
-        
         # Getting the current arcade window
         window = arcade.get_window()
         # This is setting the GameView (the actual game) to a view of the GameView class??
         game_view = GameView()
+        # This shows the load screen
+        load_view = LoadScreen()
+        window.show_view(load_view)
+        time.sleep(1)
         # Game_view.setup() just runs the setup of the GameView() 
         game_view.setup()
         # And then this window just changes the view to the actual game. 
@@ -265,6 +290,36 @@ class MainMenu(arcade.View):
                 anchor_y="center_y",
                 child=self.v_box)
         )
+
+        
+    def on_draw(self):
+        self.clear()
+        self.manager.draw()
+        self.label.draw()
+        
+class LoadScreen(arcade.View):
+    def __init__(self):
+        super().__init__()
+
+        # --- Required for all code that uses UI element,
+        # a UIManager to handle the UI.
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+        self.label = arcade.Text(
+            "Loading... Please be patient",
+            SCREEN_WIDTH/2,
+            SCREEN_HEIGHT-200,
+            arcade.csscolor.WHITE,
+            70,
+            anchor_x="center",
+            font_name=("Comic Sans MS", "Kenney Blocks"),
+        )
+        
+        # Set background color
+        arcade.set_background_color(arcade.color.DARK_BLUE_GRAY)
+
+        # Create a widget to hold the v_box widget, that will center the buttons
+        
 
         
     def on_draw(self):
@@ -320,6 +375,8 @@ class GameView(arcade.View):
         # Our Scene Object
         self.scene = None
 
+        self.can_shoot = False
+        
         # Separate variable that holds the player sprite
         self.player_sprite = None
 
@@ -457,8 +514,6 @@ class GameView(arcade.View):
         # Set up the Camera
         self.camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
         self.gui_camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
-
-        
         
         # Name of map file to load
         map_name = f"maps/level_{self.level}.tmx"            
@@ -929,9 +984,8 @@ class GameView(arcade.View):
         else:
             print("chat how did we get here")
         
-        if self.orbs_collected == 3:
+        if self.orbs_collected == 3 and self.level == 1:
             self.level_complete = True
-            self.orbs_collected = 0
         
         if self.portal_enter == True:
             if self.enemy_dead == True:
@@ -946,7 +1000,7 @@ class GameView(arcade.View):
                 print(self.level_complete)
 
         #FPS
-        #print(1/delta_time)
+        print(1/delta_time)
         if self.enemy_dead == False:
             self.timer += delta_time
         
