@@ -19,3 +19,8 @@ SHOULD DO
 2. Turn down opacity of ghost sprite
 3. Add animations for the idle fix that because idk why it doesn work
 4. Try to make animations slower
+
+
+ASK SIR
+can we make it so that the boolean is equal to nothing instead of boolean == True
+can we make it so that we dont have to initially define things as none first 
