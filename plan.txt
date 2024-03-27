@@ -24,3 +24,10 @@ SHOULD DO
 ASK SIR
 can we make it so that the boolean is equal to nothing instead of boolean == True
 can we make it so that we dont have to initially define things as none first 
+
+
+OKAY NEW TO DO LIST:
+1. Separate the player and enemy sprites into entity 
+2. Add the animations for the player slash, also the bullet itself
+3. Need to add more enemies on the last level and fix the tilemap. 
+4. Need to also clean up the title pages.
