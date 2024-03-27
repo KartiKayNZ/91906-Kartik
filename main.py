@@ -214,27 +214,36 @@ class StartButton(arcade.gui.UIFlatButton):
         If the code is clicked, then this will close the MainMenu window, then
         run the actual arcade window with the game in it
         '''
-        arcade.close_window()
-        window = gameView()
-        window.setup()
-        arcade.run()
-    
-class MainMenu(arcade.Window):
+        
+        # Getting the current arcade window
+        window = arcade.get_window()
+        # This is setting the GameView (the actual game) to a view of the GameView class??
+        game_view = GameView()
+        # Game_view.setup() just runs the setup of the GameView() 
+        game_view.setup()
+        # And then this window just changes the view to the actual game. 
+        window.show_view(game_view)
+        
+class MainMenu(arcade.View):
     """The main menu of the game"""
 
     def __init__(self):
-        super().__init__(
-            SCREEN_WIDTH,
-            SCREEN_HEIGHT,
-            "UIFlatButton Example",
-            center_window = True,
-            )
+        super().__init__()
 
         # --- Required for all code that uses UI element,
         # a UIManager to handle the UI.
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
-
+        self.label = arcade.Text(
+            SCREEN_TITLE,
+            SCREEN_WIDTH/2,
+            SCREEN_HEIGHT-200,
+            arcade.csscolor.WHITE,
+            70,
+            anchor_x="center",
+            font_name=("Comic Sans MS", "Kenney Blocks"),
+        )
+        
         # Set background color
         arcade.set_background_color(arcade.color.DARK_BLUE_GRAY)
 
@@ -258,25 +267,30 @@ class MainMenu(arcade.Window):
         )
 
         
-
-
     def on_draw(self):
         self.clear()
         self.manager.draw()
+        self.label.draw()
 
-class EndMenu(arcade.Window):
-    def __init__(self):
-        super().__init__(SCREEN_WIDTH,
-                         SCREEN_HEIGHT,
-                         "Game complete",
-                         center_window = True
-                         )
-        
+class EndMenu(arcade.View):
+    def __init__(self, time_completed = 0):
+        super().__init__()
+        game = GameView()
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
         arcade.set_background_color(arcade.color.DARK_GREEN)
         
         self.v_box = arcade.gui.UIBoxLayout()
+        
+        self.timer_text = arcade.Text(
+            f'You finished the game in {time_completed:.3f} seconds',
+            SCREEN_WIDTH/2,
+            SCREEN_HEIGHT - 150,
+            arcade.csscolor.WHITE,
+            18,
+            anchor_x= "center",
+            
+        )
         
         quit_button = QuitButton(text="Quit", width=200)
         self.v_box.add(quit_button)
@@ -291,8 +305,9 @@ class EndMenu(arcade.Window):
     def on_draw(self):
         self.clear()
         self.manager.draw()
+        self.timer_text.draw()
 
-class gameView(arcade.Window):
+class GameView(arcade.View):
     """
     Main application class.
     """
@@ -300,10 +315,7 @@ class gameView(arcade.Window):
     def __init__(self):
 
         # Call the parent class and set up the window
-        super().__init__(SCREEN_WIDTH,
-                         SCREEN_HEIGHT,
-                         SCREEN_TITLE, 
-                         center_window = True)
+        super().__init__()
 
         # Our Scene Object
         self.scene = None
@@ -434,8 +446,6 @@ class gameView(arcade.Window):
 
     def setup(self):
         """Set up the game here. Call this function to restart the game."""
-
-        self.level_complete = False
         
         if self.level == 3:
             self.enemy_spawn = True
@@ -678,8 +688,9 @@ class gameView(arcade.Window):
             arcade.play_sound(self.heal_sound)
             
         if self.sword_collected == True:
+            if self.level == 2:
+                self.level_complete = True
             self.shoot_available = True
-            self.level_complete = True
             
         
             
@@ -925,7 +936,9 @@ class gameView(arcade.Window):
         if self.portal_enter == True:
             if self.enemy_dead == True:
                 # add the window here
-                EndMenu()
+                end_view = EndMenu(self.timer)
+                self.window.show_view(end_view)
+                
             else:   
                 self.level += 1
                 self.setup()
@@ -943,7 +956,8 @@ class gameView(arcade.Window):
             
 def main():
     """Main function"""
-    MainMenu()
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, center_window = True)
+    window.show_view(MainMenu())
     arcade.run()
 
 
