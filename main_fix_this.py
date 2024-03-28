@@ -182,9 +182,10 @@ class PlayerCharacter(arcade.Sprite):
             self.texture = self.idle_textures[self.direction][self.cur_texture]
             max_texture = 5
         elif self.game.swing == True:
+            max_texture = 3
             print("I CAN SHOOT AND SHOT")
             self.texture = self.sword_textures[self.direction][self.cur_texture]
-            max_texture = 3
+            
         else:
             self.texture = self.walk_textures[self.direction][self.cur_texture]
             max_texture = 5
@@ -446,7 +447,7 @@ class GameView(arcade.View):
         self.left_pressed = None
         self.right_pressed = None
         
-        self.swing = False
+        self.swing = True
         
         self.shoot_sound = arcade.load_sound(":resources:sounds/hurt5.wav")
         self.hit_sound = arcade.load_sound("assets/hurt.mp3")
@@ -511,7 +512,7 @@ class GameView(arcade.View):
             self.enemy_spawn = False
             self.enemy_can_attack = False
         
-        self.swing = False
+        self.swing = True
         
         # Set up the Camera
         self.camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
