@@ -32,3 +32,11 @@ OKAY NEW TO DO LIST:
 3. Need to add more enemies on the last level and fix the tilemap. 
 4. Need to also clean up the title pages.
 5. Also figure out texture pairs
+
+
+NEW TO DO LIST
+1. Fix your player and enemy separated into entity
+2. The player slash animations are still broken
+3. fix the enemy movement so that its random when it gets hit maybe
+4. Fix the load screen
+5. Texture pairs get them to work. 

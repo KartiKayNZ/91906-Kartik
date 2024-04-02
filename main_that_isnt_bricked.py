@@ -3,11 +3,19 @@ Heart Soldiers, a top down game where you manouvre through levels
 Each level is a different environment to find the things you need to find
 """
 
+'''
+working on enemy movement after it gets hit.
+
+'''
+
 # Importing the libraries we need
 import arcade
 import math
 import arcade.gui
 import time
+import random
+from random import randint
+
 
 
 # Window constants 
@@ -24,7 +32,7 @@ ENEMY_START_Y = 650
 # Constants used to scale our sprites from their original size
 CHARACTER_SCALING = 2
 TILE_SCALING = 2
-ENEMY_SCALING = 0.25
+ENEMY_SCALING = 1.5
 PORTAL_SCALING = 0.25
 
 # Movement speed of player, in pixels per frame
@@ -90,69 +98,32 @@ def load_texture_pair(filename):
     ]
 
 
-class Entity(arcade.Sprite):
+class EnemyCharacter(arcade.Sprite):
     def __init__(self):
-        super().__init__()
-        
-        # Current texture frame, alongside default direction 
-        self.cur_texture = 0
-        
-        #self.scale = CHARACTER_SCALING
-        #self.direction = "down"
-        
-        self.animation_timer = 0
-        self.health = 100
-        
-        # asset path
-        
-        
-class Enemy(Entity):
-    def __init__(self):
-
-        # Setup parent class
-        super().__init__()
-
-        self.scale = ENEMY_SCALING
-        #main_path = "assets/ghost_sprites/ghost_mag.png"
-        '''
-        self.center_x = ENEMY_START_X
-        self.center_y = ENEMY_START_Y
-        '''
-        
-        self.attack = ENEMY_ATTACK
-        
-        main_path = "assets/ghost_sprites/ghost"
-        
-        self.idle_textures = []
-                
-        for i in range(6):
-            self.idle_textures.append(arcade.load_texture(f"{main_path}_idle_{i}.png"))
-    
-        self.texture = self.idle_textures[self.cur_texture]
-        
-    def update_animation(self, delta_time: float = 1 / 60):
-        self.animation_timer += delta_time
-
-        if self.animation_timer >= 0.15:
-            self.animation_timer -= 0.15
-            self.cur_texture += 1
-            if self.cur_texture > 5:
-                self.cur_texture = 0
-        else:
-            pass
-
-class PlayerCharacter(Entity):
-    """
-    A class used for all attributes related to the player sprite
-    """
-
-    def __init__(self, game):
         '''
         This function is what is passed through when the player initialises. 
         This defines all the variables needed within the PlayerCharacter
         '''
+
+        # Set up parent class
+        super().__init__()
+
+        self.cur_texture = 0
+        self.scale = ENEMY_SCALING
         
-        self.game = game
+        
+        # Default position for the character is to face downards
+class PlayerCharacter(arcade.Sprite):
+    """
+    A class used for all attributes related to the player sprite
+    """
+
+    def __init__(self):
+        '''
+        This function is what is passed through when the player initialises. 
+        This defines all the variables needed within the PlayerCharacter
+        '''
+
         # Set up parent class
         super().__init__()
 
@@ -165,12 +136,12 @@ class PlayerCharacter(Entity):
         self.scale = CHARACTER_SCALING
 
         # Track the current state of what key is pressed
-        '''self.left_pressed = False
+        self.left_pressed = False
         self.right_pressed = False
         self.up_pressed = False
-        self.down_pressed = False'''
-        
+        self.down_pressed = False
         self.direction = "down"
+        self.game = GameView()
         #self.direction = direction
         
         self.animation_timer = 0
@@ -222,26 +193,23 @@ class PlayerCharacter(Entity):
         This is passed through on_update() to update every frame
         '''
         
-        swing_cycle_done = False
         self.animation_timer += delta_time
-        #print(self.game.swing)
+        print(self.game.swing)
         
         '''if self.change_x == 0 and self.change_y == 0:
             self.texture = self.idle_textures[self.direction][self.cur_texture]
             #print("line 153 stationary")'''
-        
-        if self.game.swing == True and swing_cycle_done == False:
-            print("i shooted")
-            max_texture = 3
-            self.texture = self.sword_textures[self.direction][self.cur_texture]
-        elif self.change_x == 0 and self.change_y == 0:
-            max_texture = 5
+            
+        if self.change_x == 0 and self.change_y == 0:
             self.texture = self.idle_textures[self.direction][self.cur_texture]
-            
-        else:
             max_texture = 5
+        elif self.game.swing == True:
+            print("I CAN SHOOT AND SHOT")
+            self.texture = self.sword_textures[self.direction][self.cur_texture]
+            max_texture = 3
+        else:
             self.texture = self.walk_textures[self.direction][self.cur_texture]
-            
+            max_texture = 5
         
         
         
@@ -258,12 +226,8 @@ class PlayerCharacter(Entity):
         if self.animation_timer >= 0.08:
             self.animation_timer -= 0.08
             self.cur_texture += 1
-            if self.cur_texture > max_texture and swing_cycle_done == False:
+            if self.cur_texture > max_texture:
                 self.cur_texture = 0
-                swing_cycle_done = True
-            elif self.cur_texture > max_texture and swing_cycle_done == True:
-                self.cur_texture = 0
-                
         else:
             pass
         
@@ -486,6 +450,8 @@ class GameView(arcade.View):
         
         self.shoot_available = None
         
+        self.enemy_hit = None
+        
         # Keep track of the score
         self.score = 0
         
@@ -557,15 +523,12 @@ class GameView(arcade.View):
     def setup(self):
         """Set up the game here. Call this function to restart the game."""
         
-        self.enemy_sprite = Enemy()
-        
         if self.level == 3:
             self.enemy_spawn = True
             self.enemy_can_attack = True
         else:
             self.enemy_spawn = False
             self.enemy_can_attack = False
-        
         
         self.swing = False
         
@@ -602,7 +565,7 @@ class GameView(arcade.View):
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
         # Set up the player, specifically placing it at these coordinates.
-        self.player_sprite = PlayerCharacter(self)
+        self.player_sprite = PlayerCharacter()
         self.player_sprite.center_x = PLAYER_START_X
         self.player_sprite.center_y = PLAYER_START_Y
         self.scene.add_sprite(LAYER_NAME_PLAYER, self.player_sprite)
@@ -610,20 +573,13 @@ class GameView(arcade.View):
         self.scene.add_sprite_list(LAYER_NAME_PLAYER)
         self.scene.add_sprite_list(LAYER_NAME_BULLETS)
         
-        
-        
-        
-        '''IS THIS CORRECT'''
-        
         if self.enemy_spawn == True:
             #Enemy sprite
+            enemy_img = "assets/ghost_sprites/ghost_mag.png"
+            self.enemy_sprite = arcade.Sprite(enemy_img, ENEMY_SCALING)
             self.enemy_sprite.center_x = ENEMY_START_X
             self.enemy_sprite.center_y = ENEMY_START_Y
             self.scene.add_sprite(LAYER_NAME_ENEMIES, self.enemy_sprite)
-        
-        
-        
-        
             
         # Shooting mechanics
         self.shoot_available = False
@@ -760,7 +716,6 @@ class GameView(arcade.View):
 
         # Update the player's animation
         self.player_sprite.update_animation(delta_time)
-        self.enemy_sprite.update_animation(delta_time)
 
         # Position the camera
         self.center_camera_to_player()
@@ -885,6 +840,8 @@ class GameView(arcade.View):
             if self.knockback_time == 5:
                 self.enemy_knockback = False'''
             
+            
+            
         
         #Sets how long the invincible period is
         if self.invincible == True:
@@ -900,7 +857,6 @@ class GameView(arcade.View):
             if self.can_shoot:
                 if self.shoot_pressed:
                     self.swing = True
-                    print("self.swing is set to true now")
                     arcade.play_sound(self.shoot_sound)
                     bullet = arcade.Sprite(
                         "assets/player_sprites/sword_slash.png",
@@ -954,11 +910,15 @@ class GameView(arcade.View):
                     ],
                 )
             
-
+                if hit_list:
+                    for enemy in hit_list:
+                        self.enemy_knockback = True
+                        self.enemy_knockback_time = 0
+                
                 if hit_list:
                     for collision in hit_list:
                         if self.enemy_sprite == collision:
-                            self.enemy_knockback = True
+                            self.enemy_hit = True
                             self.enemy_health -= BULLET_DAMAGE
                             arcade.play_sound(self.hit_sound)
                             if self.enemy_health <= 0:
@@ -978,10 +938,26 @@ class GameView(arcade.View):
             else:
                 pass
             bullet.update()
-             
-        
+           
+            
         for bullet in self.scene[LAYER_NAME_BULLETS]:
             bullet.update()
+        
+        
+        # This works but is really broken
+        # 
+        # 
+        '''if self.level == 3:
+            for enemy in self.scene[LAYER_NAME_ENEMIES]:
+                if self.enemy_knockback:
+                    self.enemy_knockback_time += delta_time
+                    if self.enemy_knockback_time < 1:
+                        self.enemy_sprite.change_x = math.cos(enemy.angle) * ENEMY_KNOCKBACK_SPEED
+                        self.enemy_sprite.change_y = math.sin(enemy.angle) * ENEMY_KNOCKBACK_SPEED
+                    else:
+                        self.enemy_knockback = False
+
+                enemy.update()  '''
         
         if self.level == 1:
             self.level_quest = f"Find all 3 orbs, to summon the portal\nOrbs collected: {self.orbs_collected}"
