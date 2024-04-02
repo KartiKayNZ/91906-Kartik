@@ -232,14 +232,11 @@ class PlayerCharacter(Entity):
         
         if self.game.swing == True and swing_cycle_done == False:
             print("game swing = true+ swing cycle = false")
-            max_texture = 3
             self.texture = self.sword_textures[self.direction][self.cur_texture]
         elif self.change_x == 0 and self.change_y == 0:
-            max_texture = 5
             self.texture = self.idle_textures[self.direction][self.cur_texture]
             
         else:
-            max_texture = 5
             self.texture = self.walk_textures[self.direction][self.cur_texture]
             
         
