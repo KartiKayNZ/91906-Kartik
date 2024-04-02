@@ -17,9 +17,9 @@ SCREEN_TITLE = "Heart Soldiers"
 
 # The position where the player starts
 PLAYER_START_X = 40
-PLAYER_START_Y = 100
-ENEMY_START_X = 600
-ENEMY_START_Y = 650
+PLAYER_START_Y = 150
+ENEMY_START_X = 2000
+ENEMY_START_Y = 620
 
 # Constants used to scale our sprites from their original size
 CHARACTER_SCALING = 2
@@ -231,7 +231,7 @@ class PlayerCharacter(Entity):
             #print("line 153 stationary")'''
         
         if self.game.swing == True and swing_cycle_done == False:
-            print("i shooted")
+            print("game swing = true+ swing cycle = false")
             max_texture = 3
             self.texture = self.sword_textures[self.direction][self.cur_texture]
         elif self.change_x == 0 and self.change_y == 0:
