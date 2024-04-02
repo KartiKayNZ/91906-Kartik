@@ -28,7 +28,7 @@ ENEMY_SCALING = 0.25
 PORTAL_SCALING = 0.25
 
 # Movement speed of player, in pixels per frame
-PLAYER_MOVEMENT_SPEED = 25
+PLAYER_MOVEMENT_SPEED = 5
 PLAYER_DASH_SPEED = 15
 GRAVITY = 1
 DASH_MULTIPLIER = 4
@@ -125,8 +125,8 @@ class Enemy(Entity):
         
         self.idle_textures = []
                 
-        for i in range(6):
-            self.idle_textures.append(arcade.load_texture(f"{main_path}_idle_{i}.png"))
+        for i in range(5):
+            self.idle_textures.append(arcade.load_texture(f"{main_path}_{i}.png"))
     
         self.texture = self.idle_textures[self.cur_texture]
         
@@ -216,7 +216,6 @@ class PlayerCharacter(Entity):
         
         # Set the initial texture
         self.texture = self.idle_textures[self.direction][self.cur_texture]
-    
     def update_animation(self, delta_time: float = 1 / 60):
         '''
         This function is dedicated to updating animations in the code
@@ -224,6 +223,7 @@ class PlayerCharacter(Entity):
         '''
         
         print(self.game.swing)
+        
         self.animation_timer += delta_time
         #print(self.game.swing)
         
