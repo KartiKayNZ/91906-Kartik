@@ -221,8 +221,7 @@ class PlayerCharacter(Entity):
         This function is dedicated to updating animations in the code
         This is passed through on_update() to update every frame
         '''
-        
-        print(self.game.swing)
+    
         
         self.animation_timer += delta_time
         #print(self.game.swing)
@@ -232,7 +231,6 @@ class PlayerCharacter(Entity):
             #print("line 153 stationary")'''
         
         if self.game.swing == True:
-            print("game swing = true+ swing cycle = false")
             self.texture = self.sword_textures[self.direction][self.cur_texture]
         elif self.change_x == 0 and self.change_y == 0:
             self.texture = self.idle_textures[self.direction][self.cur_texture]
@@ -253,12 +251,13 @@ class PlayerCharacter(Entity):
             self.direction = 'down'
         
         if self.game.swing == True:
+            print(self.cur_texture)
             if self.animation_timer >= 0.08:
                 self.animation_timer -= 0.08
                 self.cur_texture += 1
                 if self.cur_texture > 5:
                     self.cur_texture = 0
-                    self.game.swing == False
+                    self.game.swing = False
         
         if self.game.swing == False:
             if self.animation_timer >= 0.08:

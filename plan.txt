@@ -35,8 +35,8 @@ OKAY NEW TO DO LIST:
 
 
 NEW TO DO LIST
-1. Fix your player and enemy separated into entity
-2. The player slash animations are still broken
+1. ----------Fix your player and enemy separated into entity 
+2. ---------- The player slash animations are still broken. Make it so that when the user presses the sword key, no other textures load but the sword ones
 3. fix the enemy movement so that its random when it gets hit maybe
 4. Fix the load screen
 5. Texture pairs get them to work. 
