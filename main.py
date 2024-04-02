@@ -153,6 +153,7 @@ class PlayerCharacter(Entity):
         '''
         
         self.game = game
+        
         # Set up parent class
         super().__init__()
 
@@ -208,7 +209,7 @@ class PlayerCharacter(Entity):
         self.sword_textures = {}
         for direction in ['up', 'down', 'left', 'right']:
             texture_pair = []
-            for i in range(4):
+            for i in range(6):
                 sword_texture = arcade.load_texture_pair(f"{main_path}_swing_{direction}_{i}.png")[0]
                 texture_pair.append(sword_texture)
             self.sword_textures[direction] = texture_pair
@@ -222,7 +223,7 @@ class PlayerCharacter(Entity):
         This is passed through on_update() to update every frame
         '''
         
-        swing_cycle_done = False
+        print(self.game.swing)
         self.animation_timer += delta_time
         #print(self.game.swing)
         
@@ -230,12 +231,11 @@ class PlayerCharacter(Entity):
             self.texture = self.idle_textures[self.direction][self.cur_texture]
             #print("line 153 stationary")'''
         
-        if self.game.swing == True and swing_cycle_done == False:
+        if self.game.swing == True:
             print("game swing = true+ swing cycle = false")
             self.texture = self.sword_textures[self.direction][self.cur_texture]
         elif self.change_x == 0 and self.change_y == 0:
             self.texture = self.idle_textures[self.direction][self.cur_texture]
-            
         else:
             self.texture = self.walk_textures[self.direction][self.cur_texture]
             
@@ -252,15 +252,23 @@ class PlayerCharacter(Entity):
         elif self.change_y < 0:
             self.direction = 'down'
         
-        if self.animation_timer >= 0.08:
-            self.animation_timer -= 0.08
-            self.cur_texture += 1
-            if self.cur_texture > max_texture and swing_cycle_done == False:
-                self.cur_texture = 0
-                swing_cycle_done = True
-            elif self.cur_texture > max_texture and swing_cycle_done == True:
-                self.cur_texture = 0
-                
+        if self.game.swing == True:
+            if self.animation_timer >= 0.08:
+                self.animation_timer -= 0.08
+                self.cur_texture += 1
+                if self.cur_texture > 5:
+                    self.cur_texture = 0
+                    self.game.swing == False
+        
+        if self.game.swing == False:
+            if self.animation_timer >= 0.08:
+                self.animation_timer -= 0.08
+                self.cur_texture += 1
+                if self.cur_texture > 5:
+                    self.cur_texture = 0
+        
+
+                    
         else:
             pass
         
@@ -509,6 +517,7 @@ class GameView(arcade.View):
             660,
             arcade.csscolor.WHITE,
             18,
+            font_name=("Kenney Mini Square")
             
         )
         
@@ -518,6 +527,7 @@ class GameView(arcade.View):
             680,
             arcade.csscolor.WHITE,
             18,
+            font_name=("Kenney Mini Square"),
             
         )
         
@@ -527,6 +537,7 @@ class GameView(arcade.View):
             640,
             arcade.csscolor.WHITE,
             18,
+            font_name=("Kenney Mini Square"),
         )
         
         self.quest_text = arcade.Text(
@@ -535,6 +546,7 @@ class GameView(arcade.View):
             680,
             arcade.csscolor.WHITE,
             18,
+            font_name=("Comic Sans MS","Kenney Blocks"),
         )
         
         self.timer_text = arcade.Text(
@@ -543,6 +555,7 @@ class GameView(arcade.View):
             650,
             arcade.csscolor.WHITE,
             18,
+            font_name=("Comic Sans MS", "Kenney Blocks"),
         )
         
         
