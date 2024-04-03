@@ -28,7 +28,7 @@ ENEMY_SCALING = 2
 PORTAL_SCALING = 0.25
 
 # Movement speed of player, in pixels per frame
-PLAYER_MOVEMENT_SPEED = 5
+PLAYER_MOVEMENT_SPEED = 10
 PLAYER_KNOCKBACK_SPEED = 15
 ENEMY_MOVEMENT_SPEED = 4
 ENEMY_KNOCKBACK_SPEED = 10
@@ -36,7 +36,7 @@ ENEMY_ATTACK = 50
 
 # Shooting Constants
 SPRITE_SCALING_LASER = 0.1
-SHOOT_COOLDOWN = 15
+SHOOT_COOLDOWN = 30
 BULLET_SPEED = 12
 BULLET_DAMAGE = 25
 
@@ -163,6 +163,7 @@ class PlayerCharacter(Entity):
         
         # The animation timer to contorl the speed which the player animates
         self.animation_timer = 0
+        self.sword_animation_timer = 0
 
         # player assets
         main_path = "assets/player_sprites/player"
@@ -215,13 +216,20 @@ class PlayerCharacter(Entity):
         '''if self.game.can_shoot == True:
             self.cur_texture = 0'''
         
+        # TO MAKE IT WORK swap SWORD_ANIMATION_TIMER for animation timer
+        
         self.animation_timer += delta_time
-
+        self.sword_animation_timer += delta_time
+        print(self.sword_animation_timer)
+        print(self.animation_timer)
         if self.game.sword_collected and self.game.swing:
             self.texture = self.sword_textures[self.direction][self.cur_texture]
-            self.cur_texture = next(self.sword_animation_cycle)
-            if self.sword_animation_cycle == 5:
+            if self.animation_timer >= 0.15:
+                self.animation_timer -= 0.15
+                self.cur_texture = next(self.sword_animation_cycle)
+            if self.cur_texture == 5:
                 self.game.swing = False
+                
         elif self.change_x == 0 and self.change_y == 0:
             self.texture = self.idle_textures[self.direction][self.cur_texture]
         else:
@@ -240,10 +248,13 @@ class PlayerCharacter(Entity):
         elif self.change_y < 0:
             self.direction = 'down'
         
+        if self.animation_timer >= 0.08:
+            self.animation_timer -= 0.08
+            self.cur_texture += 1
+            if self.cur_texture > 5:
+                self.cur_texture = 0
         
-        
-        if self.game.swing == True:
-            print(self.cur_texture)
+'''        if self.game.swing == True:
             if self.animation_timer >= 0.08:
                 self.animation_timer -= 0.08
                 self.cur_texture += 1
@@ -251,14 +262,10 @@ class PlayerCharacter(Entity):
                     self.cur_texture = 0
                     self.game.swing = False
         
-        if self.game.swing == False:
-            if self.animation_timer >= 0.08:
-                self.animation_timer -= 0.08
-                self.cur_texture += 1
-                if self.cur_texture > 5:
-                    self.cur_texture = 0
-        else:
-            pass
+        if self.game.swing == False:'''
+        
+        
+
         
         
 class QuitButton(arcade.gui.UIFlatButton):
@@ -685,7 +692,6 @@ class GameView(arcade.View):
             self.right_pressed = True
         elif key == arcade.key.E:
             self.shoot_pressed = True
-            self.swing = True
 
         self.process_keychange()
 
@@ -702,7 +708,7 @@ class GameView(arcade.View):
             self.right_pressed = False
         elif key == arcade.key.E:
             self.shoot_pressed = False
-            self.swing = False
+            
         
         
         self.process_keychange()
@@ -871,6 +877,7 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
             if self.can_shoot:
                 if self.shoot_pressed:
                     print("self.swing is set to true now")
+                    self.swing = True
                     arcade.play_sound(self.shoot_sound)
                     
                     bullet = arcade.Sprite\

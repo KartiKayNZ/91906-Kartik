@@ -216,14 +216,16 @@ class PlayerCharacter(Entity):
         '''if self.game.can_shoot == True:
             self.cur_texture = 0'''
         
+        # TO MAKE IT WORK swap SWORD_ANIMATION_TIMER for animation timer
+        
         self.animation_timer += delta_time
         self.sword_animation_timer += delta_time
-        
+        print(self.sword_animation_timer)
+        print(self.animation_timer)
         if self.game.sword_collected and self.game.swing:
             self.texture = self.sword_textures[self.direction][self.cur_texture]
-            
-            if self.sword_animation_timer >= 0.08:
-                self.sword_animation_timer -= 0.08
+            if self.animation_timer >= 0.15:
+                self.animation_timer -= 0.15
                 self.cur_texture = next(self.sword_animation_cycle)
             if self.cur_texture == 5:
                 self.game.swing = False
