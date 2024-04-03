@@ -51,3 +51,4 @@ NEW TO DO LIST
 4. add constants
 5. check the mark schedule
 6. ADD PORTAL ANIMATION
+7. FIX GHOST ANIMATION!!!!!!!!!!!!!!!!!!!!!!!!!
