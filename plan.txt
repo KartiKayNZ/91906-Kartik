@@ -50,3 +50,4 @@ NEW TO DO LIST
 3. docstring your code. 
 4. add constants
 5. check the mark schedule
+6. ADD PORTAL ANIMATION
