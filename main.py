@@ -3,12 +3,11 @@ Heart Soldiers, a top down game where you manouvre through levels
 Each level is a different environment to find the things you need to find
 """
 
-# Importing the libraries we need
+# Importing the libraries I need
 import arcade
 import math
 import arcade.gui
 from itertools import cycle
-
 
 # Window constants 
 SCREEN_WIDTH = 1280
@@ -27,6 +26,10 @@ TILE_SCALING = 2
 ENEMY_SCALING = 2
 PORTAL_SCALING = 0.25
 
+# Animation speed constants used to change speed of animations
+ANIMATION_SPEED = 0.15
+SWORD_ANIMATION_SPEED = 0.08
+
 # Movement speed of player, in pixels per frame
 PLAYER_MOVEMENT_SPEED = 10
 PLAYER_KNOCKBACK_SPEED = 15
@@ -43,13 +46,10 @@ BULLET_DAMAGE = 25
 # Portal Spawn Positions 
 PORTAL_SPAWN_X_L1 = 750
 PORTAL_SPAWN_Y_L1 = 650
-
 PORTAL_SPAWN_X_L2 = 1650
 PORTAL_SPAWN_Y_L2 = 300
-
 PORTAL_SPAWN_X_L3 = 650
 PORTAL_SPAWN_Y_L3 = 650
-
 
 # Layer name constants 
 LAYER_NAME_WALLS = "Walls"
@@ -67,14 +67,6 @@ direction = [0, 0]
 
 # Value of health pot
 HEALTH_POT_VALUE = 25
-
-# Constants used to keep track of the player's current direction
-'''RIGHT_FACING = 0
-LEFT_FACING = 1
-UP_FACING = 2
-DOWN_FACING = 3
-IDLE_FACING = 4'''
-
 
 def load_texture_pair(filename):
     """
@@ -99,7 +91,6 @@ class Entity(arcade.Sprite):
         self.animation_timer = 0
         self.health = 100
         
-        # asset path
         
         
 class Enemy(Entity):
@@ -130,8 +121,8 @@ class Enemy(Entity):
     def update_animation(self, delta_time: float = 1 / 60):
         self.animation_timer += delta_time
 
-        if self.animation_timer >= 0.15:
-            self.animation_timer -= 0.15
+        if self.animation_timer >= ANIMATION_SPEED:
+            self.animation_timer -= ANIMATION_SPEED
             self.cur_texture += 1
             if self.cur_texture > 5:
                 self.cur_texture = 0
@@ -179,7 +170,8 @@ class PlayerCharacter(Entity):
         for direction in ['up', 'down', 'left', 'right']:
             texture_pair = []
             for i in range(6):
-                idle_texture = arcade.load_texture_pair(f"{main_path}_idle_{direction}_{i}.png")[0]
+                idle_texture = arcade.load_texture_pair(f"{main_path}_idle_\
+{direction}_{i}.png")[0]
                 texture_pair.append(idle_texture)
             self.idle_textures[direction] = texture_pair
 
@@ -188,7 +180,8 @@ class PlayerCharacter(Entity):
         for direction in ['up', 'down', 'left', 'right']:
             texture_pair = []
             for i in range(6):
-                walk_texture = arcade.load_texture_pair(f"{main_path}_walk_{direction}_{i}.png")[0]
+                walk_texture = arcade.load_texture_pair(f"{main_path}_walk_\
+{direction}_{i}.png")[0]
                 texture_pair.append(walk_texture)
             self.walk_textures[direction] = texture_pair
         
@@ -198,7 +191,8 @@ class PlayerCharacter(Entity):
         for direction in ['up', 'down', 'left', 'right']:
             texture_pair = []
             for i in range(6):
-                sword_texture = arcade.load_texture_pair(f"{main_path}_swing_{direction}_{i}.png")[0]
+                sword_texture = arcade.load_texture_pair\
+(f"{main_path}_swing_{direction}_{i}.png")[0]
                 texture_pair.append(sword_texture)
             self.sword_textures[direction] = texture_pair
         
@@ -223,17 +217,20 @@ class PlayerCharacter(Entity):
         print(self.sword_animation_timer)
         print(self.animation_timer)
         if self.game.sword_collected and self.game.swing:
-            self.texture = self.sword_textures[self.direction][self.cur_texture]
-            if self.animation_timer >= 0.15:
-                self.animation_timer -= 0.15
+            self.texture = self.sword_textures\
+[self.direction][self.cur_texture]
+            if self.animation_timer >= SWORD_ANIMATION_SPEED:
+                self.animation_timer -= SWORD_ANIMATION_SPEED
                 self.cur_texture = next(self.sword_animation_cycle)
             if self.cur_texture == 5:
                 self.game.swing = False
                 
         elif self.change_x == 0 and self.change_y == 0:
-            self.texture = self.idle_textures[self.direction][self.cur_texture]
+            self.texture = self.idle_textures[self.direction]\
+[self.cur_texture]
         else:
-            self.texture = self.walk_textures[self.direction][self.cur_texture]
+            self.texture = self.walk_textures[self.direction]\
+[self.cur_texture]
             
         
         
@@ -248,26 +245,13 @@ class PlayerCharacter(Entity):
         elif self.change_y < 0:
             self.direction = 'down'
         
-        if self.animation_timer >= 0.08:
-            self.animation_timer -= 0.08
+        if self.animation_timer >= ANIMATION_SPEED:
+            self.animation_timer -= ANIMATION_SPEED
             self.cur_texture += 1
             if self.cur_texture > 5:
                 self.cur_texture = 0
-        
-'''        if self.game.swing == True:
-            if self.animation_timer >= 0.08:
-                self.animation_timer -= 0.08
-                self.cur_texture += 1
-                if self.cur_texture > 5:
-                    self.cur_texture = 0
-                    self.game.swing = False
-        
-        if self.game.swing == False:'''
-        
-        
 
-        
-        
+
 class QuitButton(arcade.gui.UIFlatButton):
     '''
     This class is for the Quit button on the MainMenu menu
@@ -446,9 +430,6 @@ class GameView(arcade.View):
         self.portal_spawn_x = 0
         self.portal_spawn_y = 0
             
-        # Do we need to reset the score?
-        self.reset_score = True
-
         self.sword_collected = False
         
         self.level = 1
@@ -465,8 +446,6 @@ class GameView(arcade.View):
         
         self.shoot_available = None
         
-        # Keep track of the score
-        self.score = 0
         
         # Keeps track of the player's health
         self.health = 100
@@ -484,16 +463,7 @@ class GameView(arcade.View):
         self.hit_sound = arcade.load_sound("assets/hurt.mp3")
         self.heal_sound = arcade.load_sound("assets/heal.mp3")
         self.yay_sound = arcade.load_sound("assets/yay.mp3")
-        
-        self.score_text = arcade.Text(
-            '',
-            1000,
-            660,
-            arcade.csscolor.WHITE,
-            18,
-            font_name=("Kenney Mini Square")
-            
-        )
+
         
         self.health_text = arcade.Text(
             '',
@@ -508,7 +478,7 @@ class GameView(arcade.View):
         self.enemy_health_text = arcade.Text(
             '',
             1000,
-            640,
+            660,
             arcade.csscolor.WHITE,
             18,
             font_name=("Kenney Mini Square"),
@@ -552,7 +522,8 @@ class GameView(arcade.View):
         
                   
         
-        # Layer specific options are defined based on Layer names in a dictionary
+        # Layer specific options are defined based on Layer names 
+        # in a dictionary
         # Doing this will make the SpriteList for the platforms layer
         # use spatial hashing for detection.
         layer_options = {
@@ -616,7 +587,7 @@ class GameView(arcade.View):
         self.can_shoot = True
         self.shoot_timer = 0
         
-        self.score = 0
+
         # Making sure level not complte
         self.level_complete = False
         
@@ -654,7 +625,6 @@ class GameView(arcade.View):
         self.gui_camera.use()
         
         self.health_text.draw()
-        self.score_text.draw()
         self.enemy_health_text.draw()
         self.quest_text.draw()
         
@@ -819,7 +789,8 @@ class GameView(arcade.View):
             #Calculates the x and y distance between the enemy and the player
             dist_x = int(dest_x - start_x)
             dist_y = int(dest_y - start_y)
-            #Using trig to find the angle difference between the player and enemy
+            #Using trig to find the angle difference 
+            # between the player and enemy
             angle = math.atan2(dist_y, dist_x)
             
             #Checks for collision between the player and enemy
@@ -880,8 +851,8 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
                     self.swing = True
                     arcade.play_sound(self.shoot_sound)
                     
-                    bullet = arcade.Sprite\
-(f"assets/slash_sprites/slash_{self.player_sprite.direction}.png", SPRITE_SCALING_LASER,) 
+                    bullet = arcade.Sprite(f"assets/slash_sprites/slash_\
+{self.player_sprite.direction}.png", SPRITE_SCALING_LASER,) 
                     self.scene.add_sprite(LAYER_NAME_BULLETS, bullet)
                     bullet.center_x = self.player_sprite.center_x
                     bullet.center_y = self.player_sprite.center_y
@@ -922,7 +893,8 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
         # Update the bullet sprites
         
         for bullet in self.scene[LAYER_NAME_BULLETS]:
-            '''This should change to colission with lists when you add more '''
+            '''This should change to colission 
+            with lists when you add more '''
             if self.level == 3:
                 hit_list = arcade.check_for_collision_with_lists(
                     bullet,
@@ -971,11 +943,10 @@ f"Find all 3 orbs, to open the portal\nOrbs collected: {self.orbs_collected}"
             self.level_quest = "ERROR"
         
         
-        
-        # Update score text
-        self.score_text.text = f"Score: {self.score}"
+    
         self.health_text.text = f"Health: {self.health}"
-        self.enemy_health_text.text = f"Enemy Health: {self.enemy_health}"
+        if self.level == 3:
+            self.enemy_health_text.text = f"Enemy Health: {self.enemy_health}"
         self.quest_text.text = f"Quest: {self.level_quest}"
         
         

@@ -43,3 +43,10 @@ NEW TO DO LIST
 
 YOU ALSO NEED TO RECORD YOUR VIDEO OF YOU PLAYING THE GAME 
 Djwiufwejhngfuiewhnfiewnhfewjkuinhfjukiewnhjkuifvhwnefijkuewnhjudnshjuivhweiuhwfuewjihu
+
+NEW TO DO LIST
+1. Fix the knockback because the ghost glitches 
+2. comment ur code 
+3. docstring your code. 
+4. add constants
+5. check the mark schedule
