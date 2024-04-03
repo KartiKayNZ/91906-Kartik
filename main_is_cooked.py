@@ -121,8 +121,7 @@ class Enemy(Entity):
         self.idle_textures = []
                 
         for i in range(5):
-            self.idle_textures.append\
-                (arcade.load_texture(f"{main_path}_{i}.png"))
+            self.idle_textures.append(arcade.load_texture(f"{main_path}_{i}.png"))
     
         self.texture = self.idle_textures[self.cur_texture]
         
@@ -183,8 +182,7 @@ class PlayerCharacter(Entity):
         for direction in ['up', 'down', 'left', 'right']:
             texture_pair = []
             for i in range(6):
-                idle_texture = arcade.load_texture_pair\
-                    (f"{main_path}_idle_{direction}_{i}.png")[0]
+                idle_texture = arcade.load_texture_pair(f"{main_path}_idle_{direction}_{i}.png")[0]
                 texture_pair.append(idle_texture)
             self.idle_textures[direction] = texture_pair
 
@@ -193,8 +191,7 @@ class PlayerCharacter(Entity):
         for direction in ['up', 'down', 'left', 'right']:
             texture_pair = []
             for i in range(6):
-                walk_texture = arcade.load_texture_pair\
-                    (f"{main_path}_walk_{direction}_{i}.png")[0]
+                walk_texture = arcade.load_texture_pair(f"{main_path}_walk_{direction}_{i}.png")[0]
                 texture_pair.append(walk_texture)
             self.walk_textures[direction] = texture_pair
         
@@ -204,8 +201,7 @@ class PlayerCharacter(Entity):
         for direction in ['up', 'down', 'left', 'right']:
             texture_pair = []
             for i in range(6):
-                sword_texture = arcade.load_texture_pair\
-                    (f"{main_path}_swing_{direction}_{i}.png")[0]
+                sword_texture = arcade.load_texture_pair(f"{main_path}_swing_{direction}_{i}.png")[0]
                 texture_pair.append(sword_texture)
             self.sword_textures[direction] = texture_pair
         
@@ -219,16 +215,18 @@ class PlayerCharacter(Entity):
     
         
         self.animation_timer += delta_time
-
+        #print(self.game.swing)
+        
+        '''if self.change_x == 0 and self.change_y == 0:
+            self.texture = self.idle_textures[self.direction][self.cur_texture]
+            #print("line 153 stationary")'''
+        
         if self.game.swing == True:
-            self.texture = self.sword_textures\
-                [self.direction][self.cur_texture]
+            self.texture = self.sword_textures[self.direction][self.cur_texture]
         elif self.change_x == 0 and self.change_y == 0:
-            self.texture = self.idle_textures\
-                [self.direction][self.cur_texture]
+            self.texture = self.idle_textures[self.direction][self.cur_texture]
         else:
-            self.texture = self.walk_textures\
-                [self.direction][self.cur_texture]
+            self.texture = self.walk_textures[self.direction][self.cur_texture]
             
         
         
@@ -286,8 +284,7 @@ class StartButton(arcade.gui.UIFlatButton):
         '''
         # Getting the current arcade window
         window = arcade.get_window()
-        # This is setting the GameView (the actual game) to 
-        # a view of the GameView class??
+        # This is setting the GameView (the actual game) to a view of the GameView class??
         game_view = GameView()
         # This shows the load screen
         # Game_view.setup() just runs the setup of the GameView() 
@@ -339,8 +336,7 @@ class MainMenu(arcade.View):
         quit_button = QuitButton(text="Quit", width=200)
         self.v_box.add(quit_button)
 
-        # Create a widget to hold the v_box widget,
-        # that will center the buttons
+        # Create a widget to hold the v_box widget, that will center the buttons
         self.manager.add(
             arcade.gui.UIAnchorWidget(
                 anchor_x="center_x",
@@ -568,11 +564,9 @@ class GameView(arcade.View):
         }
 
         # Read in the tiled map
-        self.tile_map = arcade.load_tilemap\
-(map_name, TILE_SCALING, layer_options)
+        self.tile_map = arcade.load_tilemap(map_name, TILE_SCALING, layer_options)
 
-        # Initialize Scene with our TileMap, this will automatically
-        # add all layers
+        # Initialize Scene with our TileMap, this will automatically add all layers
         # from the map as SpriteLists in the scene in the proper order.
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
@@ -702,10 +696,8 @@ class GameView(arcade.View):
         self.process_keychange()
 
     def center_camera_to_player(self):
-        screen_center_x = self.player_sprite.center_x\
-            - (self.camera.viewport_width/2)
-        screen_center_y = self.player_sprite.center_y\
-            - (self.camera.viewport_height/2)
+        screen_center_x = self.player_sprite.center_x - (self.camera.viewport_width/2)
+        screen_center_y = self.player_sprite.center_y - (self.camera.viewport_height/2)
 
         # Don't let camera travel past 0
         if screen_center_x < 0:
@@ -820,17 +812,14 @@ class GameView(arcade.View):
             
             #Checks for collision between the player and enemy
             if self.invincible != True:
-                enemy_collision = \
-arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
+                enemy_collision = arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
             else:
                 enemy_collision = False
 
             #Making the enemy follow the player precicely using trig
             if self.enemy_follow == True:
-                self.enemy_sprite.change_x = math.cos(angle)\
-                    * ENEMY_MOVEMENT_SPEED
-                self.enemy_sprite.change_y = math.sin(angle)\
-                    * ENEMY_MOVEMENT_SPEED
+                self.enemy_sprite.change_x = math.cos(angle) * ENEMY_MOVEMENT_SPEED
+                self.enemy_sprite.change_y = math.sin(angle) * ENEMY_MOVEMENT_SPEED
             #Stops the enemy if there is collision
             elif self.enemy_follow == False:
                 self.enemy_sprite.change_x = 0
@@ -846,19 +835,25 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
             #Sets how far the knockback is going to be
             if self.knockback == True:
                 if self.knockback_time < 5:
-                    self.player_sprite.center_x += math.cos(angle)\
-                        * PLAYER_KNOCKBACK_SPEED
-                    self.player_sprite.center_y += math.sin(angle)\
-                        * PLAYER_KNOCKBACK_SPEED
-                    self.enemy_sprite.change_x -= math.sin(angle)\
-                        * ENEMY_KNOCKBACK_SPEED
-                    self.enemy_sprite.change_y -= math.sin(angle)\
-                        * ENEMY_KNOCKBACK_SPEED
+                    self.player_sprite.center_x += math.cos(angle) * PLAYER_KNOCKBACK_SPEED
+                    self.player_sprite.center_y += math.sin(angle) * PLAYER_KNOCKBACK_SPEED
+                    self.enemy_sprite.change_x -= math.sin(angle) * ENEMY_KNOCKBACK_SPEED
+                    self.enemy_sprite.change_y -= math.sin(angle) * ENEMY_KNOCKBACK_SPEED
                     
                     self.knockback_time += 1
                 if self.knockback_time == 5:
                     self.knockback = False
-    
+
+        #WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP WIP    
+        '''if self.enemy_knockback == True:
+            if self.knockback_time < 5:
+                self.enemy_sprite.change_x -= math.sin(angle) * ENEMY_KNOCKBACK_SPEED
+                self.enemy_sprite.change_y -= math.sin(angle) * ENEMY_KNOCKBACK_SPEED
+                self.knockback_time += 1
+            if self.knockback_time == 5:
+                self.enemy_knockback = False'''
+            
+        
         #Sets how long the invincible period is
         if self.invincible == True:
             if self.invincible_time < 60:
@@ -957,8 +952,7 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
             bullet.update()
         
         if self.level == 1:
-            self.level_quest = \
-f"Find all 3 orbs, to open the portal\nOrbs collected: {self.orbs_collected}"
+            self.level_quest = f"Find all 3 orbs, to summon the portal\nOrbs collected: {self.orbs_collected}"
         elif self.level == 2:
             self.level_quest = "Find a weapon, you'll need it..."
         elif self.level == 3:
@@ -1051,10 +1045,7 @@ f"Find all 3 orbs, to open the portal\nOrbs collected: {self.orbs_collected}"
             
 def main():
     """Main function"""
-    window = arcade.Window(SCREEN_WIDTH,
-                           SCREEN_HEIGHT,
-                           SCREEN_TITLE,
-                           center_window = True)
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, center_window = True)
     window.show_view(MainMenu())
     arcade.run()
 
