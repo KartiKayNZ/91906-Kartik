@@ -25,13 +25,13 @@ CHARACTER_SCALING = 2
 TILE_SCALING = 2
 ENEMY_SCALING = 2
 PORTAL_SCALING = 0.25
+SLASH_SCALING = 0.1
 
-# Animation speed constants used to change speed of animations
+# Animation constants related to the animations in the game
 ANIMATION_SPEED = 0.15
 SWORD_ANIMATION_SPEED = 0.08
-
-# Constant that sets the amount of frames in the specific texture
 PLAYER_FRAME_COUNT = 6
+
 
 # Maximum Knockback Time 
 MAX_KNOCKBACK_TIME = 5
@@ -44,10 +44,10 @@ ENEMY_KNOCKBACK_SPEED = 10
 ENEMY_ATTACK = 50
 
 # Shooting Constants
-SPRITE_SCALING_LASER = 0.1
+
 SHOOT_COOLDOWN = 30
-BULLET_SPEED = 12
-BULLET_DAMAGE = 25
+SLASH_SPEED = 12
+SLASH_DAMAGE = 25
 
 # Portal Spawn Positions 
 PORTAL_SPAWN_X_L1 = 750
@@ -62,7 +62,7 @@ LAYER_NAME_WALLS = "Walls"
 LAYER_NAME_HEALTH_POT = "Health Pot"
 LAYER_NAME_BACKGROUND = "Background"
 LAYER_NAME_PLAYER = "Player"
-LAYER_NAME_BULLETS = "Bullets"
+LAYER_NAME_SLASHS = "Slashs"
 LAYER_NAME_ENEMIES = "Enemies"
 LAYER_NAME_PORTAL = "Portal"
 LAYER_NAME_ORBS = "Orbs"
@@ -256,7 +256,6 @@ class PlayerCharacter(Entity):
             self.direction = 'left'
         elif self.change_x > 0:
             self.direction = 'right'
-
         if self.change_y > 0:
             self.direction = 'up'
         elif self.change_y < 0:
@@ -361,7 +360,6 @@ class MainMenu(arcade.View):
 class EndMenu(arcade.View):
     def __init__(self, time_completed = 0):
         super().__init__()
-        game = GameView()
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
         arcade.set_background_color(arcade.color.DARK_GREEN)
@@ -575,7 +573,7 @@ class GameView(arcade.View):
         self.player_sprite = PlayerCharacter(self)
         self.scene.add_sprite(LAYER_NAME_PLAYER, self.player_sprite)
         self.scene.add_sprite_list(LAYER_NAME_PLAYER)
-        self.scene.add_sprite_list(LAYER_NAME_BULLETS)
+        self.scene.add_sprite_list(LAYER_NAME_SLASHS)
             
         self.player_sprite.center_x = PLAYER_START_X
         self.player_sprite.center_y = PLAYER_START_Y
@@ -613,8 +611,8 @@ class GameView(arcade.View):
         self.portal_sprite = None
         
         self.portal_enter = False
-        #so bullets have a home
-        #self.bullet_list = arcade.SpriteList(use_spatial_hash=True)
+        #so slashs have a home
+        #self.slash_list = arcade.SpriteList(use_spatial_hash=True)
         
         # Create the 'physics engine'
         # Set the background color
@@ -868,24 +866,24 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
                     self.swing = True
                     arcade.play_sound(self.shoot_sound)
                     
-                    bullet = arcade.Sprite(f"assets/slash_sprites/slash_\
-{self.player_sprite.direction}.png", SPRITE_SCALING_LASER,) 
-                    self.scene.add_sprite(LAYER_NAME_BULLETS, bullet)
-                    bullet.center_x = self.player_sprite.center_x
-                    bullet.center_y = self.player_sprite.center_y
+                    slash = arcade.Sprite(f"assets/slash_sprites/slash_\
+{self.player_sprite.direction}.png", SLASH_SCALING,) 
+                    self.scene.add_sprite(LAYER_NAME_SLASHS, slash)
+                    slash.center_x = self.player_sprite.center_x
+                    slash.center_y = self.player_sprite.center_y
 
                     
                     if self.player_sprite.direction == 'left':
-                        bullet.change_x = -BULLET_SPEED
+                        slash.change_x = -SLASH_SPEED
                     elif self.player_sprite.direction == 'right':
-                        bullet.change_x = BULLET_SPEED
+                        slash.change_x = SLASH_SPEED
                     if self.player_sprite.direction == 'up':
-                        bullet.change_y = BULLET_SPEED
+                        slash.change_y = SLASH_SPEED
                     elif self.player_sprite.direction == 'down':
-                        bullet.change_y = -BULLET_SPEED
+                        slash.change_y = -SLASH_SPEED
 
 
-                    #self.scene.add_sprite(LAYER_NAME_BULLETS, bullet)
+                    #self.scene.add_sprite(LAYER_NAME_SLASHS, slash)
 
                     self.can_shoot = False
                 
@@ -907,14 +905,14 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
             self.enemy_health = 100
             
         
-        # Update the bullet sprites
+        # Update the slash sprites
         
-        for bullet in self.scene[LAYER_NAME_BULLETS]:
+        for slash in self.scene[LAYER_NAME_SLASHS]:
             '''This should change to colission 
             with lists when you add more '''
             if self.level == LEVEL_3:
                 hit_list = arcade.check_for_collision_with_lists(
-                    bullet,
+                    slash,
                     [
                         self.scene[LAYER_NAME_ENEMIES]
                     ],
@@ -925,7 +923,7 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
                     for collision in hit_list:
                         if self.enemy_sprite == collision:
                             self.enemy_knockback = True
-                            self.enemy_health -= BULLET_DAMAGE
+                            self.enemy_health -= SLASH_DAMAGE
                             arcade.play_sound(self.hit_sound)
                             if self.enemy_health <= 0:
                                 collision.remove_from_sprite_lists()
@@ -940,14 +938,14 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
                             
                             
 
-                    bullet.remove_from_sprite_lists()
+                    slash.remove_from_sprite_lists()
             else:
                 pass
-            bullet.update()
+            slash.update()
              
         
-        for bullet in self.scene[LAYER_NAME_BULLETS]:
-            bullet.update()
+        for slash in self.scene[LAYER_NAME_SLASHS]:
+            slash.update()
         
         if self.level == LEVEL_1:
             self.level_quest = \
