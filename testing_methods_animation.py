@@ -30,12 +30,6 @@ PORTAL_SCALING = 0.25
 ANIMATION_SPEED = 0.15
 SWORD_ANIMATION_SPEED = 0.08
 
-# Constant that sets the amount of frames in the specific texture
-PLAYER_FRAME_COUNT = 6
-
-# Maximum Knockback Time 
-MAX_KNOCKBACK_TIME = 5
-
 # Movement speed of player, in pixels per frame
 PLAYER_MOVEMENT_SPEED = 10
 PLAYER_KNOCKBACK_SPEED = 30
@@ -68,9 +62,6 @@ LAYER_NAME_PORTAL = "Portal"
 LAYER_NAME_ORBS = "Orbs"
 LAYER_NAME_SWORD = "Sword"
 
-
-MAX_ORBS = 3
-MAX_INVINCIBLE_TIME = 30
 # Direction List for player movement
 direction = [0, 0]
 
@@ -81,9 +72,8 @@ PLAYER_HEALTH = 100
 HEALTH_POT_VALUE = 25
 
 
-LEVEL_1 = 1
-LEVEL_2 = 2
-LEVEL_3 = 3
+RIGHT_FACING = 0 
+LEFT_FACING = 1
 
 def load_texture_pair(filename):
     """
@@ -183,20 +173,42 @@ class PlayerCharacter(Entity):
         
         
         # Load textures for idle standing
-        self.idle_textures = {}
+        '''self.idle_textures = 
         for direction in ['up', 'down', 'left', 'right']:
             texture_pair = []
-            for i in range(PLAYER_FRAME_COUNT):
+            for i in range(6):
                 idle_texture = arcade.load_texture_pair(f"{main_path}_idle_\
 {direction}_{i}.png")[0]
                 texture_pair.append(idle_texture)
-            self.idle_textures[direction] = texture_pair
+            self.idle_textures[direction] = texture_pair'''
+        
+        
+        
+        self.idle_textures = {}
+        for direction in ['up', 'down']:
+            texture_list = []
+            for i in range(6):
+                texture = (f"{main_path}_idle_{direction}_{i}.png")
+                texture_list.append(texture)
+            self.idle_textures[direction] = texture
+        
+        texture_pair = []
+        for i in range (6):
+            for i in range(6):
+                idle_texture = arcade.load_texture_pair(f"{main_path}_idle_right_{i}.png")
+                texture_pair.append(idle_texture)
+            self.idle_textures[direction] = idle_texture
+        
+        
+        
+        
+        
         
         # Load textures for walking
         self.walk_textures = {}
         for direction in ['up', 'down', 'left', 'right']:
             texture_pair = []
-            for i in range(PLAYER_FRAME_COUNT):
+            for i in range(6):
                 walk_texture = arcade.load_texture_pair(f"{main_path}_walk_\
 {direction}_{i}.png")[0]
                 texture_pair.append(walk_texture)
@@ -207,7 +219,7 @@ class PlayerCharacter(Entity):
         self.sword_textures = {}
         for direction in ['up', 'down', 'left', 'right']:
             texture_pair = []
-            for i in range(PLAYER_FRAME_COUNT):
+            for i in range(6):
                 sword_texture = arcade.load_texture_pair\
 (f"{main_path}_swing_{direction}_{i}.png")[0]
                 texture_pair.append(sword_texture)
@@ -239,7 +251,7 @@ class PlayerCharacter(Entity):
             if self.animation_timer >= SWORD_ANIMATION_SPEED:
                 self.animation_timer -= SWORD_ANIMATION_SPEED
                 self.cur_texture = next(self.sword_animation_cycle)
-            if self.cur_texture == PLAYER_FRAME_COUNT - 1:
+            if self.cur_texture == 5:
                 self.game.swing = False
                 
         elif self.change_x == 0 and self.change_y == 0:
@@ -265,7 +277,7 @@ class PlayerCharacter(Entity):
         if self.animation_timer >= ANIMATION_SPEED:
             self.animation_timer -= ANIMATION_SPEED
             self.cur_texture += 1
-            if self.cur_texture > PLAYER_FRAME_COUNT - 1:
+            if self.cur_texture > 5:
                 self.cur_texture = 0
 
 
@@ -449,7 +461,7 @@ class GameView(arcade.View):
             
         self.sword_collected = False
         
-        self.level = LEVEL_1
+        self.level = 1
         
         self.enemy_spawn = None
             
@@ -485,7 +497,7 @@ class GameView(arcade.View):
         self.health_text = arcade.Text(
             '',
             SCREEN_WIDTH-200,
-            SCREEN_HEIGHT-40,
+            680,
             arcade.csscolor.WHITE,
             18,
             font_name=("Kenney Mini Square"),
@@ -494,8 +506,8 @@ class GameView(arcade.View):
         
         self.enemy_health_text = arcade.Text(
             '',
-            SCREEN_WIDTH-280,
-            SCREEN_HEIGHT-60,
+            1000,
+            660,
             arcade.csscolor.WHITE,
             18,
             font_name=("Kenney Mini Square"),
@@ -504,7 +516,7 @@ class GameView(arcade.View):
         self.quest_text = arcade.Text(
             '',
             50,
-            SCREEN_HEIGHT - 40,
+            680,
             arcade.csscolor.WHITE,
             18,
             font_name=("Comic Sans MS","Kenney Blocks"),
@@ -522,7 +534,7 @@ class GameView(arcade.View):
         """Set up the game here. Call this function to restart the game."""
         
         
-        if self.level == LEVEL_3:
+        if self.level == 3:
             self.enemy_spawn = True
             self.enemy_can_attack = True
             
@@ -713,10 +725,10 @@ class GameView(arcade.View):
         if screen_center_y < 0:
             screen_center_y = 0
             
-        if screen_center_x >= SCREEN_WIDTH:
-            screen_center_x = SCREEN_WIDTH
-        if screen_center_y >= SCREEN_HEIGHT:
-            screen_center_y = SCREEN_HEIGHT
+        if screen_center_x >= 1280:
+            screen_center_x = 1280
+        if screen_center_y >= 720:
+            screen_center_y = 720
 
         player_centered = screen_center_x, screen_center_y
 
@@ -776,7 +788,7 @@ class GameView(arcade.View):
             arcade.play_sound(self.heal_sound)
             
         if self.sword_collected == True:
-            if self.level == LEVEL_2:
+            if self.level == 2:
                 self.level_complete = True
             self.shoot_available = True
             
@@ -837,7 +849,7 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
             
             #Sets how far the knockback is going to be
             if self.knockback == True:
-                if self.knockback_time < MAX_KNOCKBACK_TIME:
+                if self.knockback_time < 5:
                     self.player_sprite.center_x += math.cos(angle)\
 * PLAYER_KNOCKBACK_SPEED
                     self.player_sprite.center_y += math.sin(angle)\
@@ -848,15 +860,15 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
 * ENEMY_KNOCKBACK_SPEED
                     
                     self.knockback_time += 1
-                if self.knockback_time == MAX_KNOCKBACK_TIME:
+                if self.knockback_time == 5:
                     self.knockback = False
     
         #Sets how long the invincible period is
         if self.invincible == True:
-            if self.invincible_time < MAX_INVINCIBLE_TIME:
+            if self.invincible_time < 30:
                 self.invincible = True
                 self.invincible_time += 1
-            if self.invincible_time == MAX_INVINCIBLE_TIME:
+            if self.invincible_time == 30:
                 self.invincible = False
                 self.invincible_time = 0
     
@@ -912,7 +924,7 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
         for bullet in self.scene[LAYER_NAME_BULLETS]:
             '''This should change to colission 
             with lists when you add more '''
-            if self.level == LEVEL_3:
+            if self.level == 3:
                 hit_list = arcade.check_for_collision_with_lists(
                     bullet,
                     [
@@ -949,12 +961,12 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
         for bullet in self.scene[LAYER_NAME_BULLETS]:
             bullet.update()
         
-        if self.level == LEVEL_1:
+        if self.level == 1:
             self.level_quest = \
-f"Find all {MAX_ORBS} orbs, to open the portal\nOrbs collected: {self.orbs_collected}"
-        elif self.level == LEVEL_2:
+f"Find all 3 orbs, to open the portal\nOrbs collected: {self.orbs_collected}"
+        elif self.level == 2:
             self.level_quest = "Find a weapon, you'll need it..."
-        elif self.level == LEVEL_3:
+        elif self.level == 3:
             self.level_quest = "You've angered the ghosts. Brace yourself."
         else:
             self.level_quest = "ERROR"
@@ -962,7 +974,7 @@ f"Find all {MAX_ORBS} orbs, to open the portal\nOrbs collected: {self.orbs_colle
         
     
         self.health_text.text = f"Health: {self.health}"
-        if self.level == LEVEL_3:
+        if self.level == 3:
             self.enemy_health_text.text = f"Enemy Health: {self.enemy_health}"
         self.quest_text.text = f"Quest: {self.level_quest}"
         
@@ -986,13 +998,13 @@ f"Find all {MAX_ORBS} orbs, to open the portal\nOrbs collected: {self.orbs_colle
                 self.portal_sprite = arcade.Sprite(portal_img, PORTAL_SCALING)
                 
                 # FIX THIS LATER
-                if self.level == LEVEL_1:
+                if self.level == 1:
                     self.portal_spawn_x = PORTAL_SPAWN_X_L1
                     self.portal_spawn_y = PORTAL_SPAWN_Y_L1
-                elif self.level == LEVEL_2:
+                elif self.level == 2:
                     self.portal_spawn_x = PORTAL_SPAWN_X_L2
                     self.portal_spawn_y = PORTAL_SPAWN_Y_L2
-                elif self.level == LEVEL_3:
+                elif self.level == 3:
                     self.portal_spawn_x = PORTAL_SPAWN_X_L3
                     self.portal_spawn_y = PORTAL_SPAWN_Y_L3
                 else: 
@@ -1017,7 +1029,7 @@ f"Find all {MAX_ORBS} orbs, to open the portal\nOrbs collected: {self.orbs_colle
         else:
             print("chat how did we get here")
         
-        if self.orbs_collected == MAX_ORBS and self.level == LEVEL_1:
+        if self.orbs_collected == 3 and self.level == 1:
             self.level_complete = True
         
         if self.portal_enter == True:

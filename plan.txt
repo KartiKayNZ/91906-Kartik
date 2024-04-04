@@ -1,24 +1,5 @@
-TODO
-1. Add a 'Quest' to the top right of the screen that will say somthing like, collect the magic 
-    orb to gain powers and kill the enemy. OR the player can pickup the sword which lets the player gain the 
-    ability to slash the sword and do the sword attack. 
-2. Once a key is collected maybe multiple enemies spawn
-    at spawn points. Use the enemy code that Clepto gave you. It could be like search for the key, 
-    and you would have to look everywhere maybe somthing like press E to search (dont have to)
 
-3. Could do somthing like the ghost cant see you unless
-    you move? And the ghost would be crazy fast aswell. There could be obstaces and spikes
-
-3. Fix the load screen and make it look nicer
-4. Try to fix load times because they're very slow
-5. Try to add animations for the the 
-
-SHOULD DO
-1. Separate enemy and player sprites into their own classes and make an entity class that
-    the enemy and player both supersede form
-2. Turn down opacity of ghost sprite
 3. Add animations for the idle fix that because idk why it doesn work
-4. Try to make animations slower
 
 
 ASK SIR
@@ -26,29 +7,28 @@ can we make it so that the boolean is equal to nothing instead of boolean == Tru
 can we make it so that we dont have to initially define things as none first 
 
 
-OKAY NEW TO DO LIST:
-1. Separate the player and enemy sprites into entity 
-2. Add the animations for the player slash, also the bullet itself
-3. Need to add more enemies on the last level and fix the tilemap. 
+OKAY NEW TO DO LIST: 
 4. Need to also clean up the title pages.
-5. Also figure out texture pairs
 
-
-NEW TO DO LIST
-1. ----------Fix your player and enemy separated into entity 
-2. ---HELP HELP HELP HELP- The player slash animations are still broken. Make it so that when the user presses the sword key, no other textures load but the sword ones
-5. Texture pairs get them to work. 
 4. CHANGE SOUND EFFECTS 
 
-
 YOU ALSO NEED TO RECORD YOUR VIDEO OF YOU PLAYING THE GAME 
-Djwiufwejhngfuiewhnfiewnhfewjkuinhfjukiewnhjkuifvhwnefijkuewnhjudnshjuivhweiuhwfuewjihu
 
 NEW TO DO LIST
-1. Fix the knockback because the ghost glitches 
+1. Fix the knockback because the ghost glitches ------
 2. comment ur code 
 3. docstring your code. 
 4. add constants
 5. check the mark schedule
 6. ADD PORTAL ANIMATION
+6.5. Change the quest font and also fix the positiioning of the text on the screen
 7. FIX GHOST ANIMATION!!!!!!!!!!!!!!!!!!!!!!!!!
+8. SET PLAYER HEALTH AND ENEMY HEALTH INSIDE THEIR RESPECTIVE CLASSES
+9. Add more boundary and invalid testing 
+CHANGE YOUR ANIMATION CODE INTO A METHOD 
+GET RID OF TEXTURE PAIRS ENTIRELY
+
+
+
+ANYTHING IN __init__ IS GLOBAL AND ANYTHING IN THE setup(self) or 
+anywhere else in the code is just in the class. 
