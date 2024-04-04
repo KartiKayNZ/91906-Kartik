@@ -47,3 +47,4 @@ add more testing
 delete unused code
 change sound effects
 record vid of you playing the game
+fix file structure
