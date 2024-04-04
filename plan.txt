@@ -48,3 +48,10 @@ delete unused code
 change sound effects
 record vid of you playing the game
 fix file structure
+why does the heal sound play when you pickup sword
+enemy health
+fix up the end screen
+find any unused code
+check fullsto0ps
+ghost sprite opacity
+fix the spacing of docstrings and comments

@@ -14,6 +14,11 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 SCREEN_TITLE = "Heart Soldiers"
 
+# Level constants.
+LEVEL_1 = 1
+LEVEL_2 = 2
+LEVEL_3 = 3
+
 # The position where the player starts.
 PLAYER_START_X = 80
 PLAYER_START_Y = 200
@@ -55,6 +60,12 @@ PORTAL_SPAWN_Y_L2 = 300
 PORTAL_SPAWN_X_L3 = 650
 PORTAL_SPAWN_Y_L3 = 650
 
+PORTAL_SPAWN_POSITIONS = {
+    LEVEL_1: (PORTAL_SPAWN_X_L1, PORTAL_SPAWN_Y_L1),
+    LEVEL_2: (PORTAL_SPAWN_X_L2, PORTAL_SPAWN_Y_L2),
+    LEVEL_3: (PORTAL_SPAWN_X_L3, PORTAL_SPAWN_Y_L3),
+}
+
 # Layer name constants.
 LAYER_NAME_WALLS = "Walls"
 LAYER_NAME_HEALTH_POT = "Health Pot"
@@ -67,11 +78,12 @@ LAYER_NAME_ORBS = "Orbs"
 LAYER_NAME_SWORD = "Sword"
 
 
-
+# The amount of frames the player can be invincible for after 
+# being hit. 
 MAX_INVINCIBLE_TIME = 30
-DIRECTIONS = ["up", "down", "left", "right"]
+
 # Direction List for player movement.
-direction = [0, 0]
+DIRECTIONS = ["up", "down", "left", "right"]
 
 # Player and enemy health values.
 PLAYER_HEALTH = 100
@@ -80,14 +92,11 @@ PLAYER_HEALTH = 100
 HEALTH_POT_VALUE = 25
 MAX_ORBS = 3
 
-# Level constants.
-LEVEL_1 = 1
-LEVEL_2 = 2
-LEVEL_3 = 3
+
 
 
 def load_texture_dict(path, frame_count, directions):
-    ''' This function loads the textures for each
+    ''' This method loads the textures for each
     direction and frame.'''
     
     # Creates a texture dictionary, then loads each direction's texture
@@ -158,8 +167,6 @@ class EnemyCharacter(Entity):
             self.cur_texture += 1
             if self.cur_texture > 5:
                 self.cur_texture = 0
-        else:
-            pass
 
 class PlayerCharacter(Entity):
     """
@@ -168,7 +175,7 @@ class PlayerCharacter(Entity):
 
     def __init__(self, game):
         '''
-        This function is what is passed through when the player
+        This method is what is passed through when the player
         initialises. This defines all the variables
         needed within the PlayerCharacter.
         '''
@@ -217,7 +224,7 @@ class PlayerCharacter(Entity):
         
     def update_animation(self, delta_time: float = 1 / 60):
         '''
-        This function is dedicated to updating animations in the code
+        This method is dedicated to updating animations in the code
         This is passed through on_update() to update every frame
         '''
 
@@ -580,30 +587,34 @@ class GameView(arcade.View):
 ############################### COMMENT FROM HERE
 
     def setup(self):
-        """Set up the game here. Call this function to restart the game."""
-        
-        
+        """Set up the game here. Calling this method
+        restarts the game."""
+    
+        # If the player is on level 3, the enemy should spawn, 
+        # and the enemy can attack. 
         if self.level == LEVEL_3:
             self.enemy_spawn = True
             self.enemy_can_attack = True
-            
+        
+        # Else the enemy wont spawn and cant attack
         else:
             self.enemy_spawn = False
             self.enemy_can_attack = False
         
-        
+        # Setting the player's swing to False to prevent any texture
+        # glitches. 
         self.swing = False
         
-        # Set up the Camera
+        # Setting up the arcade gamera (for the map) and the GUI 
+        # camera (for the UI e.g health text, quest text etc).
         self.camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
         self.gui_camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
         
                   
         
-        # Layer specific options are defined based on Layer names 
-        # in a dictionary
-        # Doing this will make the SpriteList for the platforms layer
-        # use spatial hashing for detection.
+        # This enables spatial hashing for layers of the tilemap so 
+        # that the player cannot go through walls, can pick up items
+        # etc.
         layer_options = {
             LAYER_NAME_WALLS: {
                 "use_spatial_hash": True,
@@ -619,82 +630,86 @@ class GameView(arcade.View):
             },
         }
 
-        # Name of map file to load
+        # Name of map file to load.
         map_name = f"maps/level_{self.level}.tmx"  
         
-        # Read in the tiled map
+        # This loads the tilemap from the map file.
         self.tile_map = arcade.load_tilemap\
 (map_name, TILE_SCALING, layer_options)
 
         # Initialize Scene with our TileMap, this will automatically
-        # add all layers
-        # from the map as SpriteLists in the scene in the proper order.
+        # add all layers from the map as
+        # SpriteLists in the scene in the proper order.
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
-        # Set up the player, specifically placing it at these coordinates.
-        
-        self.player_sprite = PlayerCharacter(self)
+        # Setting up the player sprite using the PlayerCharacter class.
+        # Also adding the player spritelist and the slash spritelist.
         self.scene.add_sprite(LAYER_NAME_PLAYER, self.player_sprite)
         self.scene.add_sprite_list(LAYER_NAME_PLAYER)
         self.scene.add_sprite_list(LAYER_NAME_SLASHS)
-            
+
+        # Placing the player sprite at the defined start position.
         self.player_sprite.center_x = PLAYER_START_X
         self.player_sprite.center_y = PLAYER_START_Y
         
-        
-        
-        '''IS THIS CORRECT'''
-        
+        # If the enemy can spawn (when it is on level 3) the enemy
+        # sprite will spawn. 
         if self.enemy_spawn == True:
-            #Enemy sprite
+            # Adding the enemy sprite to the scene.
+            self.scene.add_sprite(LAYER_NAME_ENEMIES, self.enemy_sprite)
+            # Setting the enemy sprite's starting position.
             self.enemy_sprite.center_x = ENEMY_START_X
             self.enemy_sprite.center_y = ENEMY_START_Y
-            self.scene.add_sprite(LAYER_NAME_ENEMIES, self.enemy_sprite)
-        
+            
         
         
         
             
-        # Shooting mechanics
+        # Shooting mechanics, checking if player can shoot, 
+        # shoot timer, shoot_available. 
         self.shoot_available = False
         self.can_shoot = True
         self.shoot_timer = 0
-        
 
-        # Making sure level not complte
+        # Making sure level not complte.
         self.level_complete = False
 
+        # Setting the portal_sprite to nothing for easier.
+        # portal spawn checking
         self.portal_sprite = None
         
+        # Checking if the player has entered the portal.
         self.portal_enter = False
-        #so slashs have a home
-        #self.slash_list = arcade.SpriteList(use_spatial_hash=True)
-        
-        # Create the 'physics engine'
-        # Set the background color
+
+        # Seting the background color.
         if self.tile_map.background_color:
             arcade.set_background_color(self.tile_map.background_color)
 
-        # Create the 'physics engine'
+        # Creating the physics enginge so the player can move 
+        # with respect to physics. 
         self.physics_engine = arcade.PhysicsEngineSimple(
             self.player_sprite, walls=self.scene["Walls"]
             )
         
+        # Setting the player_direction to the player's direction.
+        # This is useful for the direction that the bullet will shoot.
         self.player_direction = self.player_sprite.direction
     def on_draw(self):
-        """Render the screen."""
+        """Renders the screen and everything in the window."""
 
-        # Clear the screen to the background color
+        # Clear the screen to the background color.
         self.clear()
 
-        # Activate our Camera
+        # Activating the main camera (follows player).
         self.camera.use()
 
-        # Draw our Scene
+        # Drawing the scene. 
         self.scene.draw()
         
+        # Activating the GUI camera (keeps text on the window).
         self.gui_camera.use()
         
+        # Drawing all the text for the GUI Camera to handle. 
         self.player_health_text.draw()
         self.player_shield_text.draw()
         self.enemy_health_text.draw()
@@ -702,7 +717,11 @@ class GameView(arcade.View):
         
         
     def process_keychange(self):
-        # Process left/right
+        '''This method checks what key the player has pressed,
+        and then changes the player's movement speed based on the
+        key pressed. W is for up, A is for left, S is for down,
+        and D is for right, or arrow keys. '''
+        
         if self.right_pressed and not self.left_pressed:
             self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
 
@@ -722,7 +741,9 @@ class GameView(arcade.View):
             self.player_sprite.change_y = 0
 
     def on_key_press(self, key, modifiers):
-        """Called whenever a key is pressed."""
+        """Called whenever a key is pressed. This method works
+        to see if the player should move up, down, left, or right,
+        and/or checks if the player is trying to shoot."""
 
         if key == arcade.key.UP or key == arcade.key.W:
             self.up_pressed = True
@@ -735,11 +756,14 @@ class GameView(arcade.View):
         elif key == arcade.key.E:
             self.shoot_pressed = True
 
+        # Calling the process_keychange method to change the player's
+        # movement speed based on the key pressed.
         self.process_keychange()
 
     def on_key_release(self, key, modifiers):
-        """Called when the user releases a key."""
-
+        """Called when the user releases a key to not have any
+        uneeded sustained movements."""
+        
         if key == arcade.key.UP or key == arcade.key.W:
             self.up_pressed = False
         elif key == arcade.key.DOWN or key == arcade.key.S:
@@ -752,151 +776,155 @@ class GameView(arcade.View):
             self.shoot_pressed = False
             
         
-        
+        # Calling the process_keychange method to change the player's
+        # movement speed again.
         self.process_keychange()
 
     def center_camera_to_player(self):
+        ''' This method centers the camera on the player sprite. '''
+
+        # The viewport_width and viewport_height are the size of the
+        # window, which would be SCREEN_HEIGHT and SCREEN_WIDTH, 
+        # however should the game get a window resizing function
+        # in the future, self.camera.viewport_width and height are 
+        # more futureproof.
         screen_center_x = self.player_sprite.center_x - \
 (self.camera.viewport_width/2)
         screen_center_y = self.player_sprite.center_y - \
 (self.camera.viewport_height/2)
 
-        # Don't let camera travel past 0
+        # This does not let the camera go out of the screen. Allowing 
+        # for boundaries to be established.
         if screen_center_x < 0:
             screen_center_x = 0
         
         if screen_center_y < 0:
             screen_center_y = 0
-            
+        
         if screen_center_x >= SCREEN_WIDTH:
             screen_center_x = SCREEN_WIDTH
+            
         if screen_center_y >= SCREEN_HEIGHT:
             screen_center_y = SCREEN_HEIGHT
 
+        # Setting a player_centered tuple to the center of the screen.
         player_centered = screen_center_x, screen_center_y
 
-
-
+        # Moving the camera to the center of the screen (the player).
         self.camera.move_to(player_centered)
-    
-    '''def attack(self, game):
-        enemy = self.enemy_sprite  # Get the enemy sprite'''
-    
+ 
     def on_update(self, delta_time):
-        """Movement and game logic"""
+        """ This runs every frame. Everything in this function will be 
+        run every instance of delta_time, which is the amount of time
+        that has passed since the last frame. """
 
-        # Move the player with the physics engine
+        # Move the player with the physics engine.
         self.physics_engine.update()
 
-        # Update the player's animation
+        # Update the player and enemy sprite animation.
         self.player_sprite.update_animation(delta_time)
         self.enemy_sprite.update_animation(delta_time)
 
-        # Position the camera
+        # Position the camera to the player sprite.
         self.center_camera_to_player()
         
+        # Creating a collision list fo the health pots, orbs and
+        # sword.
         pot_hit_list = arcade.check_for_collision_with_list(
             self.player_sprite, self.scene[LAYER_NAME_HEALTH_POT]
         )
-
-        # Loop through each health pot we hit (if any) and remove it
-        for pot in pot_hit_list:
-            pot.remove_from_sprite_lists()
-            self.player_shield += HEALTH_POT_VALUE
-            arcade.play_sound(self.heal_sound)
-            
-        self.scene.update_animation(
-            delta_time, [LAYER_NAME_BACKGROUND, LAYER_NAME_PLAYER]
-        )
-        
-        
+ 
         orb_hit_list = arcade.check_for_collision_with_list(
             self.player_sprite, self.scene[LAYER_NAME_ORBS]
         )
-
-        # Loop through each orb we hit (if any) and remove it
-        for orb in orb_hit_list:
-            orb.remove_from_sprite_lists()
-            self.orbs_collected += 1
-            #arcade.play_sound(self.heal_sound)
         
         sword_hit_list = arcade.check_for_collision_with_list(
             self.player_sprite, self.scene[LAYER_NAME_SWORD]
         )
 
-        # Loop through each health pot we hit (if any) and remove it
+        
+        # Loop through each health pot/orb/sword we hit (if any) and remove it
+        # from the sprite listt.
+        for pot in pot_hit_list:
+            pot.remove_from_sprite_lists()
+            self.player_shield += HEALTH_POT_VALUE
+            arcade.play_sound(self.heal_sound)        
+
+        for orb in orb_hit_list:
+            orb.remove_from_sprite_lists()
+            self.orbs_collected += 1
+        
         for sword in sword_hit_list:
             sword.remove_from_sprite_lists()
             self.sword_collected = True
             arcade.play_sound(self.heal_sound)
             
+        # If the sword has been collected and the level is 2, then the
+        # level is complete and the player has the ability to shoot.
         if self.sword_collected == True:
             if self.level == LEVEL_2:
                 self.level_complete = True
             self.shoot_available = True
             
-        
-            
-        self.scene.update_animation(
-            delta_time, [LAYER_NAME_BACKGROUND, LAYER_NAME_PLAYER]
-        )
-        
-        
-        ###ENEMY FOLLOWING PLAYER###
-        
+        # If the enemy is able to attack, this if statement will run.
         if self.enemy_can_attack == True:
-                
-            #Enemy following player
+            # Enemy following player.
             self.enemy_sprite.center_x += self.enemy_sprite.change_x
             self.enemy_sprite.center_y += self.enemy_sprite.change_y
 
-            #Records the enemy's position
+            # Records the enemy's position.
             start_x = self.enemy_sprite.center_x
             start_y = self.enemy_sprite.center_y
 
-            #Records the player's position
+            # Records the player's position.
             dest_x = self.player_sprite.center_x
             dest_y = self.player_sprite.center_y
 
-            #Calculates the x and y distance between the enemy and the player
+            # Calculates the x and y distance between the enemy
+            # and the player.
             dist_x = int(dest_x - start_x)
             dist_y = int(dest_y - start_y)
-            #Using trig to find the angle difference 
-            # between the player and enemy
+            # Using trigonometry to find the angle difference 
+            # between the player and enemy.
             angle = math.atan2(dist_y, dist_x)
             
-            #Checks for collision between the player and enemy
+            # Checking for collision between the player and enemy.
             if self.player_invincible != True:
                 enemy_collision = \
 arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
             else:
                 enemy_collision = False
 
-            #Making the enemy follow the player precicely using trig
+            # Making the enemy follow the player using trigonometry.
             if self.enemy_follow == True:
                 self.enemy_sprite.change_x = math.cos(angle)\
 * ENEMY_MOVEMENT_SPEED
                 self.enemy_sprite.change_y = math.sin(angle)\
 * ENEMY_MOVEMENT_SPEED
-            #Stops the enemy if there is collision
+
+            # Stops the enemy if there is a collision with the player.
             elif self.enemy_follow == False:
                 self.enemy_sprite.change_x = 0
                 self.enemy_sprite.change_y = 0
                 
-            #Creates player knockback if enemy collides with the player
-            if enemy_collision == True:
-                
+            # Creates player knockback if enemy collides with player.
+            # If the player has shield, shield will be deducted
+            # but if the player does not have shield, the player's 
+            # health will be deducted
+            if enemy_collision == True:  
                 if self.player_shield <= 0:
                     self.player_sprite.health -= self.enemy_attack
                 else:
-                    self.player_shield -= self.enemy_attack
+                    self.player_shield -= self.enemy_attack 
                 
-                    
+                # Resetting the knockback timer.
+                # And also setting knockback and invincibility to true.
                 self.knockback_time = 0
                 self.player_knockback = True
                 self.player_invincible = True
             
-            #Sets how far the knockback is going to be
+            # Sets how far the knockback is going to be for the
+            # player and the enemy.
             if self.player_knockback == True:
                 if self.knockback_time < MAX_KNOCKBACK_TIME:
                     self.player_sprite.center_x += math.cos(angle)\
@@ -908,6 +936,7 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
                     self.enemy_sprite.change_y -= math.sin(angle)\
 * ENEMY_KNOCKBACK_SPEED
                     
+                    # Increasing knockback timer.
                     self.knockback_time += 1
                 if self.knockback_time == MAX_KNOCKBACK_TIME:
                     self.player_knockback = False
@@ -921,11 +950,12 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
                 self.player_invincible = False
                 self.player_invincible_time = 0
     
-    
+        # If the player is able to shoot, this if statement will run.
         if self.shoot_available == True:
+            # If the player doesn't have a shoot cooldown.
             if self.can_shoot:
+                # If the player is pressing the shoot button.
                 if self.shoot_pressed:
-                    print("self.swing is set to true now")
                     self.swing = True
                     arcade.play_sound(self.shoot_sound)
                     
@@ -945,9 +975,6 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
                     elif self.player_sprite.direction == 'down':
                         slash.change_y = -SLASH_SPEED
 
-
-                    #self.scene.add_sprite(LAYER_NAME_SLASHS, slash)
-
                     self.can_shoot = False
                 
             else:
@@ -955,9 +982,6 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
                 if self.shoot_timer == SHOOT_COOLDOWN:
                     self.can_shoot = True
                     self.shoot_timer = 0
-        else:
-            #print("not able to shoot dont have sword")
-            pass
         
         if self.player_sprite.health <= 0:
             self.player_sprite.center_x = PLAYER_START_X
@@ -994,15 +1018,7 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
                                 self.enemy_dead = True
                                 self.level_complete = True
 
-                            
-                        else:
-                            print("Meow")
-                            
-                            
-
                     slash.remove_from_sprite_lists()
-            else:
-                pass
             slash.update()
              
         
@@ -1052,7 +1068,10 @@ the portal\nOrbs collected: {self.orbs_collected}"
                 self.portal_sprite = arcade.Sprite(portal_img, PORTAL_SCALING)
                 
                 # FIX THIS LATER
-                if self.level == LEVEL_1:
+                
+                self.portal_spawn_x, self.portal_spawn_y\
+= PORTAL_SPAWN_POSITIONS[self.level]
+                '''if self.level == LEVEL_1:
                     self.portal_spawn_x = PORTAL_SPAWN_X_L1
                     self.portal_spawn_y = PORTAL_SPAWN_Y_L1
                 elif self.level == LEVEL_2:
@@ -1061,13 +1080,11 @@ the portal\nOrbs collected: {self.orbs_collected}"
                 elif self.level == LEVEL_3:
                     self.portal_spawn_x = PORTAL_SPAWN_X_L3
                     self.portal_spawn_y = PORTAL_SPAWN_Y_L3
-                else: 
-                    print("OUT OF RANGE LEVELS")
+                else: '''
                 
                 self.portal_sprite.center_x = self.portal_spawn_x
                 self.portal_sprite.center_y = self.portal_spawn_y 
                 self.scene.add_sprite(LAYER_NAME_PORTAL, self.portal_sprite)
-                print(len(self.scene[LAYER_NAME_PORTAL]))
             portal_hit_list = arcade.check_for_collision_with_list(
                 self.player_sprite, self.scene[LAYER_NAME_PORTAL]
             )
@@ -1075,7 +1092,6 @@ the portal\nOrbs collected: {self.orbs_collected}"
             for portal in portal_hit_list:
                 portal.remove_from_sprite_lists()
                 self.portal_enter = True
-                print("PORTAL HAS BEEN DELETED ")
         
                 
         elif self.level_complete == False:
@@ -1094,7 +1110,6 @@ the portal\nOrbs collected: {self.orbs_collected}"
                 self.level += 1
                 self.setup()
                 self.portal_enter = False
-                print(self.level_complete)
 
         
             
@@ -1102,7 +1117,7 @@ the portal\nOrbs collected: {self.orbs_collected}"
             
             
 def main():
-    """Main function"""
+    """Main method"""
     window = arcade.Window(SCREEN_WIDTH,
                            SCREEN_HEIGHT,
                            SCREEN_TITLE,
