@@ -1,55 +1,53 @@
 """
 Heart Soldiers, a top down game where you manouvre through levels
-Each level is a different environment to find the things you need to find
+Each level is a different environment to find the things you need to find.
 """
 
-# Importing the libraries I need
+# Importing the libraries I need.
 import arcade
 import math
 import arcade.gui
 from itertools import cycle
 
-# Window constants 
+# Window constants.
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 SCREEN_TITLE = "Heart Soldiers"
 
-# The position where the player starts
-PLAYER_START_X = 40
-PLAYER_START_Y = 150
+# The position where the player starts.
+PLAYER_START_X = 80
+PLAYER_START_Y = 200
 ENEMY_START_X = 2000
 ENEMY_START_Y = 620
 
-# Constants used to scale our sprites from their original size
+# Constants used to scale our sprites from their original size.
 CHARACTER_SCALING = 2
 TILE_SCALING = 2
 ENEMY_SCALING = 2
 PORTAL_SCALING = 0.25
 SLASH_SCALING = 0.1
 
-# Animation constants related to the animations in the game
+# Animation constants related to the animations in the game.
 ANIMATION_SPEED = 0.15
 SWORD_ANIMATION_SPEED = 0.08
 PLAYER_FRAME_COUNT = 6
 
-
-# Maximum Knockback Time 
+# Maximum Knockback Time.
 MAX_KNOCKBACK_TIME = 5
 
-# Movement speed of player, in pixels per frame
+# Movement speed of player, in pixels per frame.
 PLAYER_MOVEMENT_SPEED = 10
 PLAYER_KNOCKBACK_SPEED = 30
 ENEMY_MOVEMENT_SPEED = 3
 ENEMY_KNOCKBACK_SPEED = 10
-ENEMY_ATTACK = 50
+ENEMY_ATTACK = 25
 
-# Shooting Constants
-
+# Shooting Constants.
 SHOOT_COOLDOWN = 30
 SLASH_SPEED = 12
 SLASH_DAMAGE = 25
 
-# Portal Spawn Positions 
+# Portal Spawn Positions.
 PORTAL_SPAWN_X_L1 = 750
 PORTAL_SPAWN_Y_L1 = 650
 PORTAL_SPAWN_X_L2 = 1650
@@ -57,7 +55,7 @@ PORTAL_SPAWN_Y_L2 = 300
 PORTAL_SPAWN_X_L3 = 650
 PORTAL_SPAWN_Y_L3 = 650
 
-# Layer name constants 
+# Layer name constants.
 LAYER_NAME_WALLS = "Walls"
 LAYER_NAME_HEALTH_POT = "Health Pot"
 LAYER_NAME_BACKGROUND = "Background"
@@ -69,66 +67,83 @@ LAYER_NAME_ORBS = "Orbs"
 LAYER_NAME_SWORD = "Sword"
 
 
-MAX_ORBS = 3
+
 MAX_INVINCIBLE_TIME = 30
-# Direction List for player movement
+DIRECTIONS = ["up", "down", "left", "right"]
+# Direction List for player movement.
 direction = [0, 0]
 
-# Player and enemy health values
+# Player and enemy health values.
 PLAYER_HEALTH = 100
 
-# Value of health pot
+# Item constants.
 HEALTH_POT_VALUE = 25
+MAX_ORBS = 3
 
-
+# Level constants.
 LEVEL_1 = 1
 LEVEL_2 = 2
 LEVEL_3 = 3
 
-def load_texture_pair(filename):
-    """
-    Load a texture pair, with the second being a mirror image.
-    """
-    return [
-        arcade.load_texture(filename),
-        arcade.load_texture(filename, flipped_horizontally=True),
-    ]
 
+def load_texture_dict(path, frame_count, directions):
+    ''' This function loads the textures for each
+    direction and frame.'''
+    
+    # Creates a texture dictionary, then loads each direction's texture
+    # then appends the texture list to the texture dictionary with the
+    # appropriate direction. 
+    textures = {}
+    for direction in directions:
+        texture_list = []
+        for i in range(frame_count):
+            texture = arcade.load_texture(f"{path}_{direction}_{i}.png")
+            texture_list.append(texture)
+        textures[direction] = texture_list
+    # Returns the texture dictionary.
+    return textures
 
 class Entity(arcade.Sprite):
+    ''' This is the base entity class for the game. 
+        All entities in the game inherit from this class.'''
     def __init__(self):
+        ''' This is the constructor for the Entity class. '''
+        
+        # Setup parent class.
         super().__init__()
         
-        # Current texture frame, alongside default direction 
+        # Current texture frame, alongside default direction.
         self.cur_texture = 0
         
-        #self.scale = CHARACTER_SCALING
-        #self.direction = "down"
-        
+        # The timer that allows for animation speed control.
         self.animation_timer = 0
+        
+        # Default health of each entity.
         self.health = 100
         
         
         
-class Enemy(Entity):
+class EnemyCharacter(Entity):
+    ''' This is the enemy code. This code inherits from the Entity class.
+    and '''
     def __init__(self):
 
-        # Setup parent class
+        # Setup parent class.
         super().__init__()
-
-        self.scale = ENEMY_SCALING
-        #main_path = "assets/ghost_sprites/ghost_mag.png"
-        '''
-        self.center_x = ENEMY_START_X
-        self.center_y = ENEMY_START_Y
-        '''
         
+        # Scaling of the enemy sprite.
+        self.scale = ENEMY_SCALING
+
+        # The amount of damage the enemy does to the player.
         self.attack = ENEMY_ATTACK
         
+        # The main path where ghost assets are found.
         main_path = "assets/ghost_sprites/ghost"
         
+        # Creating an idle textures list.
         self.idle_textures = []
-                
+        
+        # FIX THIS AND COMMENT
         for i in range(5):
             self.idle_textures.append\
 (arcade.load_texture(f"{main_path}_{i}.png"))
@@ -148,74 +163,56 @@ class Enemy(Entity):
 
 class PlayerCharacter(Entity):
     """
-    A class used for all attributes related to the player sprite
+    A class used for all attributes related to the player sprite.
     """
 
     def __init__(self, game):
         '''
-        This function is what is passed through when the player initialises. 
-        This defines all the variables needed within the PlayerCharacter
+        This function is what is passed through when the player
+        initialises. This defines all the variables
+        needed within the PlayerCharacter.
         '''
         
+        # Setting self.game = to game in order to check the state of 
+        # game attributes.
         self.game = game
         
-        # Set up parent class
+        # Set up parent class.
         super().__init__()
 
-        # Used for flipping between image sequences
+        # Used for flipping between image sequences.
         self.cur_texture = 0
         self.scale = CHARACTER_SCALING
         
-        # Default character face direction
+        # Default character face direction.
         self.direction = "down"
         
-        # The animation timer to contorl the speed which the player animates
+        # The animation timer to contorl the speed which the 
+        # player animates.
         self.animation_timer = 0
-        self.sword_animation_timer = 0
 
-        # player assets
+
+        # Path to the player assets
         main_path = "assets/player_sprites/player"
 
         
         
         '''YOU CAN CONDENSE THIS INTO LESS CODE MOST DEFINITELY'''
         
+        '''YOU CAN CONDENSE THIS INTO LESS CODE MOST DEFINITELY'''
+        '''YOU CAN CONDENSE THIS INTO LESS CODE MOST DEFINITELY'''
         
+        # Load idle, walk and sword textures.
+        main_path = "assets/player_sprites/player_"
+        self.idle_textures = load_texture_dict(f"{main_path}idle", PLAYER_FRAME_COUNT, DIRECTIONS)
+        self.walk_textures = load_texture_dict(f"{main_path}walk", PLAYER_FRAME_COUNT, DIRECTIONS)
+        self.sword_textures = load_texture_dict(f"{main_path}swing", PLAYER_FRAME_COUNT, DIRECTIONS)
         
-        # Load textures for idle standing
-        self.idle_textures = {}
-        for direction in ['up', 'down', 'left', 'right']:
-            texture_pair = []
-            for i in range(PLAYER_FRAME_COUNT):
-                idle_texture = arcade.load_texture_pair(f"{main_path}_idle_\
-{direction}_{i}.png")[0]
-                texture_pair.append(idle_texture)
-            self.idle_textures[direction] = texture_pair
-        
-        # Load textures for walking
-        self.walk_textures = {}
-        for direction in ['up', 'down', 'left', 'right']:
-            texture_pair = []
-            for i in range(PLAYER_FRAME_COUNT):
-                walk_texture = arcade.load_texture_pair(f"{main_path}_walk_\
-{direction}_{i}.png")[0]
-                texture_pair.append(walk_texture)
-            self.walk_textures[direction] = texture_pair
-        
-        
-        # sword textures brokey
-        self.sword_textures = {}
-        for direction in ['up', 'down', 'left', 'right']:
-            texture_pair = []
-            for i in range(PLAYER_FRAME_COUNT):
-                sword_texture = arcade.load_texture_pair\
-(f"{main_path}_swing_{direction}_{i}.png")[0]
-                texture_pair.append(sword_texture)
-            self.sword_textures[direction] = texture_pair
-        
-        # Set the initial texture
+        # Set the initial texture.
         self.texture = self.idle_textures[self.direction][self.cur_texture]
-        #self.sword_animation_index = 0
+        
+        # The sword animation cycle in order to isolate the sword
+        # textures to not combine them with the cycle of idle and walking.
         self.sword_animation_cycle = cycle([0, 1, 2, 3, 4, 5])
         
     def update_animation(self, delta_time: float = 1 / 60):
@@ -223,25 +220,28 @@ class PlayerCharacter(Entity):
         This function is dedicated to updating animations in the code
         This is passed through on_update() to update every frame
         '''
-    
-        '''if self.game.can_shoot == True:
-            self.cur_texture = 0'''
+
         
-        # TO MAKE IT WORK swap SWORD_ANIMATION_TIMER for animation timer
-        
+        # The animation timer is += delta time to act as a timer
+        # for greater control over the animation speed.
         self.animation_timer += delta_time
-        self.sword_animation_timer += delta_time
-        print(self.sword_animation_timer)
-        print(self.animation_timer)
+        
+        # This conditiion checks if the player has the sword,
+        # and can also swing the sword.
         if self.game.sword_collected and self.game.swing:
+            # Setting texture to the sword texture + direction facing.
             self.texture = self.sword_textures\
 [self.direction][self.cur_texture]
+
+            # This controls the speed at which cur_texture changes.
             if self.animation_timer >= SWORD_ANIMATION_SPEED:
                 self.animation_timer -= SWORD_ANIMATION_SPEED
                 self.cur_texture = next(self.sword_animation_cycle)
             if self.cur_texture == PLAYER_FRAME_COUNT - 1:
                 self.game.swing = False
-                
+        
+        # Checks if player is stationary or moving and sets texture
+        # appropriately. 
         elif self.change_x == 0 and self.change_y == 0:
             self.texture = self.idle_textures[self.direction]\
 [self.cur_texture]
@@ -251,7 +251,8 @@ class PlayerCharacter(Entity):
             
         
         
-        
+        # Setting player direction based on change_x and change_y.
+        # Player direction saves based on the last direction.
         if self.change_x < 0:
             self.direction = 'left'
         elif self.change_x > 0:
@@ -261,6 +262,9 @@ class PlayerCharacter(Entity):
         elif self.change_y < 0:
             self.direction = 'down'
         
+        # This controls the speed at which cur_texture changes 
+        # however with a different speed for the sword.  
+
         if self.animation_timer >= ANIMATION_SPEED:
             self.animation_timer -= ANIMATION_SPEED
             self.cur_texture += 1
@@ -284,30 +288,40 @@ class StartButton(arcade.gui.UIFlatButton):
     '''
     def on_click(self, event: arcade.gui.UIOnClickEvent):
         '''
-        If the code is clicked, then this will close the MainMenu window, then
-        run the actual arcade window with the game in it
+        If the code is clicked, then this will close the 
+        MainMenu window, then run the actual arcade
+        window with the game in it
         '''
-        # Getting the current arcade window
+        # Getting the current arcade window.
         window = arcade.get_window()
+        
         # This is setting the GameView (the actual game) to 
-        # a view of the GameView class??
+        # a view of the GameView class.
         game_view = GameView()
+        
         # This shows the load screen
-        # Game_view.setup() just runs the setup of the GameView() 
+        # Game_view.setup() just runs the setup of the GameView() .
         game_view.setup()
+        
         # And then this window just changes the view to the actual game. 
         window.show_view(game_view)
         
 class MainMenu(arcade.View):
-    """The main menu of the game"""
+    """This method holds the main menu of the game"""
 
     def __init__(self):
+        ''' This is the constructor for the Main Menu class. '''
+        
+        # Setup parent class.
         super().__init__()
-
-        # --- Required for all code that uses UI element,
+        
+        # Required for all code that uses UI element,
         # a UIManager to handle the UI.
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
+        
+        # Label options for the title of the game on MainMenu
+        # This sets the properties of the label.
         self.label = arcade.Text(
             SCREEN_TITLE,
             SCREEN_WIDTH/2,
@@ -318,6 +332,8 @@ class MainMenu(arcade.View):
             font_name=("Kenney Pixel Square"),
         )
         
+        # Label options for the instructions on MainMenu
+        # This sets the properties of the label.
         self.instructions = arcade.Text(
             'To play, WASD or Arrow Keys to move. E is to swing your sword',
             SCREEN_WIDTH/2,
@@ -328,22 +344,22 @@ class MainMenu(arcade.View):
             font_name=("Arial"),
         )
         
-        # Set background color
+        # Set background color.
         arcade.set_background_color(arcade.color.BLAST_OFF_BRONZE)
 
-        # Create a vertical BoxGroup to align buttons
+        # Create a vertical BoxGroup to align buttons.
         self.v_box = arcade.gui.UIBoxLayout()
 
-        # Create the buttons
+        # Create the start button.
         start_button = StartButton(text="Start Game", width=200)
         self.v_box.add(start_button.with_space_around(bottom=20))
 
-        # Again, method 1. Use a child class to handle events.
+        # Creating the quit button.
         quit_button = QuitButton(text="Quit", width=200)
         self.v_box.add(quit_button)
 
         # Create a widget to hold the v_box widget,
-        # that will center the buttons
+        # that will center the buttons.
         self.manager.add(
             arcade.gui.UIAnchorWidget(
                 anchor_x="center_x",
@@ -352,20 +368,37 @@ class MainMenu(arcade.View):
         )
 
     def on_draw(self):
+        ''' This draws the Main Menu window, alongside all the 
+        buttons. '''
+        
+        # Clears the current screen
         self.clear()
+        
+        # Draws the manager, labels and the instruction text.
         self.manager.draw()
         self.label.draw()
         self.instructions.draw()
 
 class EndMenu(arcade.View):
+    ''' This method containms the end menu window code'''
     def __init__(self, time_completed = 0):
+        ''' This is the constructor for the End Menu class. '''
+        
+        # Setup parent class
         super().__init__()
+        
+        # Required for all code that uses UI element,
+        # a UIManager to handle the UI.
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
+        
+        # Setting the backgrond colour of the end menu. 
         arcade.set_background_color(arcade.color.DARK_GREEN)
         
+        # Create a vertical BoxGroup to align buttons.
         self.v_box = arcade.gui.UIBoxLayout()
         
+        # Creating the properties of the finish text.
         self.finish_text = arcade.Text(
             f'You finished the game! Well done!',
             SCREEN_WIDTH/2,
@@ -376,9 +409,12 @@ class EndMenu(arcade.View):
             
         )
         
+        # Create the quit button
         quit_button = QuitButton(text="Quit", width=200)
         self.v_box.add(quit_button)
         
+        # Create a widget to hold the v_box widget,
+        # that will center the buttons.
         self.manager.add(
             arcade.gui.UIAnchorWidget(
                 anchor_x="center_x",
@@ -387,104 +423,130 @@ class EndMenu(arcade.View):
         )
     
     def on_draw(self):
+        ''' This draws the End Menu window, alongside all the 
+        buttons. '''
+        
+        # Clears the current screen.
         self.clear()
+        
+        # Draws the manager, labels and the instruction text.
         self.manager.draw()
         self.finish_text.draw()
 
 class GameView(arcade.View):
     """
-    Main application class.
+    This is the main class for the actual game. This holds all the 
+    code that runs the actual game. 
     """
 
     def __init__(self):
-
-        # Call the parent class and set up the window
+        ''' This is the constructor for the GameView class. '''
+        
+        # Call the parent class and set up the window.
         super().__init__()
 
         # Our Scene Object
         self.scene = None
 
+        # Checking if the player is able to shoot.
         self.can_shoot = False
         
-        # Separate variable that holds the player sprite
-        self.player_sprite = None
-
+        # Separate variable that holds the player sprite.
+        self.player_sprite = PlayerCharacter(self)
+        self.enemy_sprite = EnemyCharacter()
+        
         # Our physics engine
         self.physics_engine = None
 
-        # A Camera that can be used for scrolling the screen
+        # A Camera that can be used for scrolling the screen.
         self.camera = None
         self.gui_camera = None
-        
-        #Enemy health
-        self.enemy_health = 0
 
-        #Enemy attack
+        # Enemy attack damage.
         self.enemy_attack = ENEMY_ATTACK
 
-        #Enemy following player
+        # Enemy condition booleans.
         self.enemy_follow = True
-        
         self.enemy_can_attack = False
         
-        self.dashing = None
+        # Player invincibility booleans.
+        self.player_invincible = None
+        self.player_invincible_time = 0
         
-        self.invincible = None
-        self.invincible_time = 0
-        
-        self.knockback = None
+        # Player knockback booleans.
+        self.player_knockback = None
         self.knockback_time = 0
         self.enemy_knockback = False
         
+        # If the player has entered the portal boolean. 
         self.portal_enter = None
         
-        self.shoot_pressed = False    
-        
+        # Used to check if the shoot key has been pressed.
+        self.shoot_pressed = False
+       
+        # Stores the direction the player is facing. 
         self.player_direction = None
         
+        # Stores the player's shield level.
+        self.player_shield = 0
+        
+        # Used to specify the portal spawn point.
         self.portal_spawn_x = 0
         self.portal_spawn_y = 0
-            
+        
+        # Stores information if the sword has been collected.
         self.sword_collected = False
         
+        # Sets the initial level to level 1.
         self.level = LEVEL_1
         
+        # Stores information if the enemy should spawn or not.
         self.enemy_spawn = None
-            
-        self.quest_text = ""
         
-        self.level_quest = ""
-        
+        # Stores the number of orbs collected.
         self.orbs_collected = 0
         
+        # Stores if the level has been complete or not.
         self.level_complete = None
         
+        # Stores if the player can shoot or not.
         self.shoot_available = None
-        
-        
-        # Keeps track of the player's health
-        self.health = PLAYER_HEALTH
-        
+
+        # Stores if the enemy has died or not.
         self.enemy_dead = False
         
+        # Stores the keypresses from the user.
         self.up_pressed = None
         self.down_pressed = None
         self.left_pressed = None
         self.right_pressed = None
-        
+        # This is if the user has pressed the swing key.   
         self.swing = False
         
+        # Loading all the sounds required in the game.
         self.shoot_sound = arcade.load_sound("assets/shoot.mp3")
         self.hit_sound = arcade.load_sound("assets/hurt.mp3")
         self.heal_sound = arcade.load_sound("assets/heal.mp3")
         self.yay_sound = arcade.load_sound("assets/yay.mp3")
 
         
-        self.health_text = arcade.Text(
+        # These text labels are used to display the player's 
+        # health and also shield, alongisde the enemy health and quest.
+        self.player_health_text = arcade.Text(
             '',
-            SCREEN_WIDTH-200,
-            SCREEN_HEIGHT-40,
-            arcade.csscolor.WHITE,
+            SCREEN_WIDTH-140,
+            SCREEN_HEIGHT-30,
+            arcade.csscolor.BLACK,
+            18,
+            font_name=("Kenney Mini Square"),
+            
+        )
+        
+        self.player_shield_text = arcade.Text(
+            '',
+            SCREEN_WIDTH-135,
+            SCREEN_HEIGHT-50,
+            arcade.csscolor.BLACK,
             18,
             font_name=("Kenney Mini Square"),
             
@@ -492,8 +554,8 @@ class GameView(arcade.View):
         
         self.enemy_health_text = arcade.Text(
             '',
-            SCREEN_WIDTH-280,
-            SCREEN_HEIGHT-60,
+            SCREEN_WIDTH-225,
+            SCREEN_HEIGHT-70,
             arcade.csscolor.WHITE,
             18,
             font_name=("Kenney Mini Square"),
@@ -501,21 +563,22 @@ class GameView(arcade.View):
         
         self.quest_text = arcade.Text(
             '',
-            50,
-            SCREEN_HEIGHT - 40,
-            arcade.csscolor.WHITE,
+            10,
+            SCREEN_HEIGHT - 30,
+            arcade.csscolor.BLACK,
             18,
-            font_name=("Comic Sans MS","Kenney Blocks"),
+            font_name=("Kenney Mini Square"),
         )
         
         
         
-
+        # Setting the background color of the game to match 
+        # the background color of the game.
         arcade.set_background_color((234, 165, 108))
-        
-        self.timer = 0
 
-        self.enemy_sprite = Enemy()
+
+############################### COMMENT FROM HERE
+
     def setup(self):
         """Set up the game here. Call this function to restart the game."""
         
@@ -578,11 +641,6 @@ class GameView(arcade.View):
         self.player_sprite.center_x = PLAYER_START_X
         self.player_sprite.center_y = PLAYER_START_Y
         
-
-        
-        
-        
-        
         
         
         '''IS THIS CORRECT'''
@@ -605,8 +663,6 @@ class GameView(arcade.View):
 
         # Making sure level not complte
         self.level_complete = False
-        
-        self.enemy_health = 100
 
         self.portal_sprite = None
         
@@ -639,7 +695,8 @@ class GameView(arcade.View):
         
         self.gui_camera.use()
         
-        self.health_text.draw()
+        self.player_health_text.draw()
+        self.player_shield_text.draw()
         self.enemy_health_text.draw()
         self.quest_text.draw()
         
@@ -745,7 +802,7 @@ class GameView(arcade.View):
         # Loop through each health pot we hit (if any) and remove it
         for pot in pot_hit_list:
             pot.remove_from_sprite_lists()
-            self.health += HEALTH_POT_VALUE
+            self.player_shield += HEALTH_POT_VALUE
             arcade.play_sound(self.heal_sound)
             
         self.scene.update_animation(
@@ -809,7 +866,7 @@ class GameView(arcade.View):
             angle = math.atan2(dist_y, dist_x)
             
             #Checks for collision between the player and enemy
-            if self.invincible != True:
+            if self.player_invincible != True:
                 enemy_collision = \
 arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
             else:
@@ -828,13 +885,19 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
                 
             #Creates player knockback if enemy collides with the player
             if enemy_collision == True:
-                self.health -= self.enemy_attack
+                
+                if self.player_shield <= 0:
+                    self.player_sprite.health -= self.enemy_attack
+                else:
+                    self.player_shield -= self.enemy_attack
+                
+                    
                 self.knockback_time = 0
-                self.knockback = True
-                self.invincible = True
+                self.player_knockback = True
+                self.player_invincible = True
             
             #Sets how far the knockback is going to be
-            if self.knockback == True:
+            if self.player_knockback == True:
                 if self.knockback_time < MAX_KNOCKBACK_TIME:
                     self.player_sprite.center_x += math.cos(angle)\
 * PLAYER_KNOCKBACK_SPEED
@@ -847,16 +910,16 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
                     
                     self.knockback_time += 1
                 if self.knockback_time == MAX_KNOCKBACK_TIME:
-                    self.knockback = False
+                    self.player_knockback = False
     
         #Sets how long the invincible period is
-        if self.invincible == True:
-            if self.invincible_time < MAX_INVINCIBLE_TIME:
-                self.invincible = True
-                self.invincible_time += 1
-            if self.invincible_time == MAX_INVINCIBLE_TIME:
-                self.invincible = False
-                self.invincible_time = 0
+        if self.player_invincible == True:
+            if self.player_invincible_time < MAX_INVINCIBLE_TIME:
+                self.player_invincible = True
+                self.player_invincible_time += 1
+            if self.player_invincible_time == MAX_INVINCIBLE_TIME:
+                self.player_invincible = False
+                self.player_invincible_time = 0
     
     
         if self.shoot_available == True:
@@ -896,13 +959,13 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
             #print("not able to shoot dont have sword")
             pass
         
-        if self.health <= 0:
+        if self.player_sprite.health <= 0:
             self.player_sprite.center_x = PLAYER_START_X
             self.player_sprite.center_y = PLAYER_START_Y
             self.enemy_sprite.center_x = ENEMY_START_X
             self.enemy_sprite.center_y = ENEMY_START_Y
-            self.health = PLAYER_HEALTH
-            self.enemy_health = 100
+            self.player_sprite.health = PLAYER_HEALTH
+            self.enemy_sprite.health = 100
             
         
         # Update the slash sprites
@@ -918,14 +981,13 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
                     ],
                 )
             
-
                 if hit_list:
                     for collision in hit_list:
                         if self.enemy_sprite == collision:
                             self.enemy_knockback = True
-                            self.enemy_health -= SLASH_DAMAGE
+                            self.enemy_sprite.health -= SLASH_DAMAGE
                             arcade.play_sound(self.hit_sound)
-                            if self.enemy_health <= 0:
+                            if self.enemy_sprite.health <= 0:
                                 collision.remove_from_sprite_lists()
                                 self.enemy_can_attack = False
                                 arcade.play_sound(self.yay_sound)
@@ -948,8 +1010,8 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
             slash.update()
         
         if self.level == LEVEL_1:
-            self.level_quest = \
-f"Find all {MAX_ORBS} orbs, to open the portal\nOrbs collected: {self.orbs_collected}"
+            self.level_quest = f"Find all {MAX_ORBS} orbs, to open \
+the portal\nOrbs collected: {self.orbs_collected}"
         elif self.level == LEVEL_2:
             self.level_quest = "Find a weapon, you'll need it..."
         elif self.level == LEVEL_3:
@@ -959,10 +1021,16 @@ f"Find all {MAX_ORBS} orbs, to open the portal\nOrbs collected: {self.orbs_colle
         
         
     
-        self.health_text.text = f"Health: {self.health}"
+        self.player_health_text.text = f"Health: {self.player_sprite.health}"
+        self.player_shield_text.text = f"shield: {self.player_shield}"
         if self.level == LEVEL_3:
-            self.enemy_health_text.text = f"Enemy Health: {self.enemy_health}"
+            self.enemy_health_text.text = f"Enemy Health: {self.enemy_sprite.health}"
         self.quest_text.text = f"Quest: {self.level_quest}"
+        if self.level != LEVEL_1:
+            self.player_health_text.color = arcade.color.WHITE
+            self.player_shield_text.color = arcade.color.WHITE
+            self.quest_text.color = arcade.color.WHITE
+            
         
         
         # Boundary Code
@@ -1012,8 +1080,6 @@ f"Find all {MAX_ORBS} orbs, to open the portal\nOrbs collected: {self.orbs_colle
                 
         elif self.level_complete == False:
             pass
-        else:
-            print("chat how did we get here")
         
         if self.orbs_collected == MAX_ORBS and self.level == LEVEL_1:
             self.level_complete = True
@@ -1021,7 +1087,7 @@ f"Find all {MAX_ORBS} orbs, to open the portal\nOrbs collected: {self.orbs_colle
         if self.portal_enter == True:
             if self.enemy_dead == True:
                 # add the window here
-                end_view = EndMenu(self.timer)
+                end_view = EndMenu()
                 self.window.show_view(end_view)
                 
             else:   
@@ -1030,10 +1096,6 @@ f"Find all {MAX_ORBS} orbs, to open the portal\nOrbs collected: {self.orbs_colle
                 self.portal_enter = False
                 print(self.level_complete)
 
-        #FPS
-        #print(1/delta_time)
-        if self.enemy_dead == False:
-            self.timer += delta_time
         
             
                 

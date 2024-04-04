@@ -28,8 +28,22 @@ NEW TO DO LIST
 CHANGE YOUR ANIMATION CODE INTO A METHOD 
 GET RID OF TEXTURE PAIRS ENTIRELY
 FIX NAMING LIKE BULLETS N SHIT
+DELETE ALL UNUSED CODE 
 
 
 
 ANYTHING IN __init__ IS GLOBAL AND ANYTHING IN THE setup(self) or 
 anywhere else in the code is just in the class. 
+
+
+
+
+New new to do lists
+
+finihs comments and docstrings
+check mark schedule
+fix portal and ghost animations
+add more testing
+delete unused code
+change sound effects
+record vid of you playing the game
