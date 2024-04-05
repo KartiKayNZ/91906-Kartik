@@ -17,10 +17,10 @@ SCREEN_TITLE = "Heart Soldiers"
 # Map borders and border movement constants.
 MAP_X_BORDER = 2550
 MAP_Y_BORDER = 1425
-BORDER_BOUNCE_X = -5
-FLOOR_BOUNCE_X = 5
-BORDER_BOUNCE_Y = -5
-ROOF_BOUNCE_Y = 5
+BORDER_BOUNCE_X = -1
+FLOOR_BOUNCE_X = 1
+BORDER_BOUNCE_Y = -1
+ROOF_BOUNCE_Y = 1
 
 # Background color for menu and gameplay.
 GAME_BACKGROUND_COLOR = (234, 165, 108)
@@ -30,6 +30,7 @@ MENU_BACKGROUND_COLOR = arcade.color.BLAST_OFF_BRONZE
 TITLE_SIZE = 70
 SUBHEADING_SIZE = 20
 GUI_TEXT_SIZE = 18
+END_TEXT_SIZE = 30
 
 # Level constants.
 LEVEL_1 = 1
@@ -47,7 +48,7 @@ CHARACTER_SCALING = 2
 TILE_SCALING = 2
 ENEMY_SCALING = 2
 PORTAL_SCALING = 0.25
-SLASH_SCALING = 0.1
+SLASH_SCALING = 1
 
 # Animation constants related to the animations in the game.
 PLAYER_ANIMATION_SPEED = 0.15
@@ -56,7 +57,7 @@ SWORD_ANIMATION_SPEED = 0.08
 PLAYER_FRAME_COUNT = 6
 ENEMY_FRAME_COUNT = 5
 
-# Enemy Sprite transparancy (0-255)
+# Enemy Sprite transparancy (0-255).
 ENEMY_SPRITE_ALPHA = 130
 
 # Maximum Knockback Time.
@@ -70,7 +71,7 @@ ENEMY_KNOCKBACK_SPEED = 10
 ENEMY_ATTACK = 25
 
 # Shooting Constants.
-SHOOT_COOLDOWN = 30
+SHOOT_COOLDOWN = 50
 SLASH_SPEED = 12
 SLASH_DAMAGE = 25
 
@@ -121,9 +122,6 @@ LEVEL_QUESTS = {
 }
 
 
-
-
-
 def load_texture_dict(path, frame_count, directions):
     ''' This method loads the textures for each
     direction and frame.'''
@@ -141,9 +139,11 @@ def load_texture_dict(path, frame_count, directions):
     # Returns the texture dictionary.
     return textures
 
+
 class Entity(arcade.Sprite):
     ''' This is the base entity class for the game. 
         All entities in the game inherit from this class.'''
+        
     def __init__(self):
         ''' This is the constructor for the Entity class. '''
         
@@ -160,10 +160,10 @@ class Entity(arcade.Sprite):
         self.health = 100
         
         
-        
 class EnemyCharacter(Entity):
     ''' This is the enemy code. This code inherits 
     from the Entity class.'''
+    
     def __init__(self):
 
         # Setup parent class.
@@ -207,7 +207,8 @@ class EnemyCharacter(Entity):
         # ranging from 0 to the amount of frames the enemy has
         # -1. 
         self.texture = self.idle_textures[self.cur_texture]
-
+        
+        
 class PlayerCharacter(Entity):
     """
     A class used for all attributes related to the player sprite.
@@ -238,7 +239,6 @@ class PlayerCharacter(Entity):
         # player animates.
         self.animation_timer = 0
 
-
         # Path to the player assets.
         main_path = "assets/player_sprites/player"
         
@@ -264,7 +264,6 @@ class PlayerCharacter(Entity):
         This method is dedicated to updating animations in the code
         This is passed through on_update() to update every frame.
         '''
-
         
         # The animation timer is += delta time to act as a timer
         # for greater control over the animation speed.
@@ -293,8 +292,6 @@ class PlayerCharacter(Entity):
             self.texture = self.walk_textures[self.direction]\
 [self.cur_texture]
             
-        
-        
         # Setting player direction based on change_x and change_y.
         # Player direction saves based on the last direction.
         if self.change_x < 0:
@@ -307,8 +304,7 @@ class PlayerCharacter(Entity):
             self.direction = 'down'
         
         # This controls the speed at which cur_texture changes 
-        # however with a different speed for the sword.  
-
+        # however with a different speed for the sword.
         if self.animation_timer >= PLAYER_ANIMATION_SPEED:
             self.animation_timer -= PLAYER_ANIMATION_SPEED
             self.cur_texture += 1
@@ -320,16 +316,19 @@ class QuitButton(arcade.gui.UIFlatButton):
     '''
     This class is for the Quit button on the MainMenu menu.
     '''
+    
     def on_click(self, event: arcade.gui.UIOnClickEvent):
         '''
         If the button is clicked, then the code will quit.
         '''
         arcade.exit()
         
+        
 class StartButton(arcade.gui.UIFlatButton):
     '''
     This class is for the start button on the MainMenu.
     '''
+    
     def on_click(self, event: arcade.gui.UIOnClickEvent):
         '''
         If the code is clicked, then this will close the 
@@ -349,6 +348,7 @@ class StartButton(arcade.gui.UIFlatButton):
         
         # And then this window just changes the view to the game.
         window.show_view(game_view)
+        
         
 class MainMenu(arcade.View):
     """This method holds the main menu of the game"""
@@ -423,8 +423,10 @@ class MainMenu(arcade.View):
         self.label.draw()
         self.instructions.draw()
 
+
 class EndMenu(arcade.View):
     ''' This method containms the end menu window code'''
+    
     def __init__(self, time_completed = 0):
         ''' This is the constructor for the End Menu class. '''
         
@@ -437,19 +439,19 @@ class EndMenu(arcade.View):
         self.manager.enable()
         
         # Setting the backgrond colour of the end menu. 
-        arcade.set_background_color(GAME_BACKGROUND_COLOR)
+        arcade.set_background_color(MENU_BACKGROUND_COLOR)
         
         # Create a vertical BoxGroup to align buttons.
         self.v_box = arcade.gui.UIBoxLayout()
         
         # Creating the properties of the finish text.
         self.finish_text = arcade.Text(
-            f'You finished the game! Well done!',
+            'You beat the game! Congratulations!',
             SCREEN_WIDTH/2,
-            SCREEN_HEIGHT - 150,
+            SCREEN_HEIGHT - 225,
             arcade.csscolor.WHITE,
-            SUBHEADING_SIZE,
-            font_name= "Kenney Pixel Square",
+            END_TEXT_SIZE,
+            font_name= "Arial",
             anchor_x= "center",
             
         )
@@ -477,6 +479,7 @@ class EndMenu(arcade.View):
         # Draws the manager, labels and the instruction text.
         self.manager.draw()
         self.finish_text.draw()
+
 
 class GameView(arcade.View):
     """
@@ -579,8 +582,9 @@ arcade.load_sound("assets/sound/sword_pickup.mp3")
         self.orbs_collect_sound = \
 arcade.load_sound("assets/sound/orb_collect.mp3")
         self.hurt_sound = arcade.load_sound("assets/sound/hurt.wav")
+        self.portal_spawn_sound = \
+arcade.load_sound("assets/sound/portal_spawn.mp3")
 
-        
         # These text labels are used to display the player's 
         # health and also shield, alongisde the enemy health and quest.
         self.player_health_text = arcade.Text(
@@ -595,7 +599,7 @@ arcade.load_sound("assets/sound/orb_collect.mp3")
         
         self.player_shield_text = arcade.Text(
             '',
-            SCREEN_WIDTH-135,
+            SCREEN_WIDTH-140,
             SCREEN_HEIGHT-50,
             arcade.csscolor.BLACK,
             GUI_TEXT_SIZE,
@@ -620,8 +624,6 @@ arcade.load_sound("assets/sound/orb_collect.mp3")
             GUI_TEXT_SIZE,
             font_name=("Kenney Mini Square"),
         )
-        
-        
         
         # Setting the background color of the game to match 
         # the background color of the game.
@@ -649,9 +651,7 @@ arcade.load_sound("assets/sound/orb_collect.mp3")
         # Setting up the arcade gamera (for the map) and the GUI 
         # camera (for the UI e.g health text, quest text etc).
         self.camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
-        self.gui_camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
-        
-                  
+        self.gui_camera = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)   
         
         # This enables spatial hashing for layers of the tilemap so 
         # that the player cannot go through walls, can pick up items
@@ -729,6 +729,7 @@ arcade.load_sound("assets/sound/orb_collect.mp3")
         # Setting the player_direction to the player's direction.
         # This is useful for the direction that the bullet will shoot.
         self.player_direction = self.player_sprite.direction
+        
     def on_draw(self):
         """Renders the screen and everything in the window."""
 
@@ -749,7 +750,6 @@ arcade.load_sound("assets/sound/orb_collect.mp3")
         self.player_shield_text.draw()
         self.enemy_health_text.draw()
         self.quest_text.draw()
-        
         
     def process_keychange(self):
         ''''This method checks what key the player has pressed,
@@ -838,7 +838,7 @@ self.up_pressed else 0) or (
         self.camera.move_to(player_centered)
  
     def on_update(self, delta_time):
-        """ This runs every frame. Everything in this function will be 
+        """ This runs every frame. Everything in this method will be 
         run every instance of delta_time, which is the amount of time
         that has passed since the last frame. """
 
@@ -881,7 +881,6 @@ self.up_pressed else 0) or (
                     self.sword_collected = True
                     arcade.play_sound(self.sword_collected_sound)
 
-            
         # If the sword has been collected and the level is 2, then the
         # level is complete and the player has the ability to shoot.
         if self.sword_collected == True:
@@ -1081,7 +1080,6 @@ f"Enemy Health: {self.enemy_sprite.health}"
             self.player_health_text.color = arcade.color.WHITE
             self.player_shield_text.color = arcade.color.WHITE
             self.quest_text.color = arcade.color.WHITE
-            
     
         # Boundary code to prevent the palyer from going out of the
         # map borders.
@@ -1101,7 +1099,7 @@ f"Enemy Health: {self.enemy_sprite.health}"
             # prevent continuously spawning the portal sprite.
             if self.portal_sprite is None:
                 # Portal sprite
-                portal_img = "assets/portal_sprites/portal_0.png"
+                portal_img = "assets/portal_sprite/portal.png"
                 self.portal_sprite = arcade.Sprite(portal_img, PORTAL_SCALING)
                 
                 # Setting the portal spawn to a tuple of the respective
@@ -1114,7 +1112,7 @@ f"Enemy Health: {self.enemy_sprite.health}"
                 self.portal_sprite.center_x = self.portal_spawn_x
                 self.portal_sprite.center_y = self.portal_spawn_y 
                 self.scene.add_sprite(LAYER_NAME_PORTAL, self.portal_sprite)
-            
+                arcade.play_sound(self.portal_spawn_sound)
             # Checking if the player has entered the portal.
             portal_hit_list = arcade.check_for_collision_with_list(
                 self.player_sprite, self.scene[LAYER_NAME_PORTAL]
@@ -1146,7 +1144,7 @@ f"Enemy Health: {self.enemy_sprite.health}"
 
             
 def main():
-    """Main method that runs the entire program."""
+    """Main function that runs the entire program."""
     # Defining intial window size and running arcade.
     window = arcade.Window(SCREEN_WIDTH,
                            SCREEN_HEIGHT,
