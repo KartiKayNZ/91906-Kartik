@@ -161,7 +161,7 @@ class Entity(arcade.Sprite):
         
         
 class EnemyCharacter(Entity):
-    ''' This is the enemy code. This code inherits 
+    ''' This is the enemy sprite code. This code inherits 
     from the Entity class.'''
     
     def __init__(self):
@@ -211,7 +211,8 @@ class EnemyCharacter(Entity):
         
 class PlayerCharacter(Entity):
     """
-    A class used for all attributes related to the player sprite.
+    A class used for all attributes related to the player sprite. 
+    This also inherits from the Entity class.
     """
 
     def __init__(self, game):
@@ -351,7 +352,7 @@ class StartButton(arcade.gui.UIFlatButton):
         
         
 class MainMenu(arcade.View):
-    """This method holds the main menu of the game"""
+    """This method holds the code for main menu of the game"""
 
     def __init__(self):
         ''' This is the constructor for the Main Menu class. '''
