@@ -22,9 +22,14 @@ FLOOR_BOUNCE_X = 5
 BORDER_BOUNCE_Y = -5
 ROOF_BOUNCE_Y = 5
 
-# Background color
+# Background color for menu and gameplay.
+GAME_BACKGROUND_COLOR = (234, 165, 108)
+MENU_BACKGROUND_COLOR = arcade.color.BLAST_OFF_BRONZE
 
-BACKGROUND_COLOR = (234, 165, 108)
+# Font constants.
+TITLE_SIZE = 70
+SUBHEADING_SIZE = 20
+GUI_TEXT_SIZE = 18
 
 # Level constants.
 LEVEL_1 = 1
@@ -45,15 +50,20 @@ PORTAL_SCALING = 0.25
 SLASH_SCALING = 0.1
 
 # Animation constants related to the animations in the game.
-ANIMATION_SPEED = 0.15
+PLAYER_ANIMATION_SPEED = 0.15
+ENEMY_ANIMATION_SPEED = 0.1
 SWORD_ANIMATION_SPEED = 0.08
 PLAYER_FRAME_COUNT = 6
+ENEMY_FRAME_COUNT = 5
+
+# Enemy Sprite transparancy (0-255)
+ENEMY_SPRITE_ALPHA = 130
 
 # Maximum Knockback Time.
 MAX_KNOCKBACK_TIME = 5
 
 # Movement speed of player, in pixels per frame.
-PLAYER_MOVEMENT_SPEED = 10
+PLAYER_MOVEMENT_SPEED = 5
 PLAYER_KNOCKBACK_SPEED = 30
 ENEMY_MOVEMENT_SPEED = 3
 ENEMY_KNOCKBACK_SPEED = 10
@@ -89,7 +99,6 @@ LAYER_NAME_PORTAL = "Portal"
 LAYER_NAME_ORBS = "Orbs"
 LAYER_NAME_SWORD = "Sword"
 
-
 # The amount of frames the player can be invincible for after 
 # being hit. 
 MAX_INVINCIBLE_TIME = 30
@@ -106,9 +115,9 @@ MAX_ORBS = 3
 
 # Quests for each level.
 LEVEL_QUESTS = {
-    LEVEL_1: f"Find all {MAX_ORBS} orbs, to open the portal\n",
+    LEVEL_1: f"Find all {MAX_ORBS} orbs, to open the portal ",
     LEVEL_2: "Find a weapon, you'll need it...",
-    LEVEL_3: "You've angered the ghosts. Brace yourself."
+    LEVEL_3: "You've angered the mighty ghost. Brace yourself."
 }
 
 
@@ -171,22 +180,33 @@ class EnemyCharacter(Entity):
         
         # Creating an idle textures list.
         self.idle_textures = []
-        
-# FIX THISSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
-        for i in range(5):
-            self.idle_textures.append\
-(arcade.load_texture(f"{main_path}_{i}.png"))
-    
+        for i in range(ENEMY_FRAME_COUNT):
+            texture = arcade.load_texture(f"{main_path}_{i}.png")
+            self.idle_textures.append(texture)
         self.texture = self.idle_textures[self.cur_texture]
         
     def update_animation(self, delta_time: float = 1 / 60):
+        ''' This method is used to update the animation of the 
+        enemy sprites. It differs from the update method in that
+        the player has due to different animations speeds
+        and lack of direction for the ghost textures. '''
+        
+        # Animation timer acts to control the animation speed of the
+        # texture changes with the sprite. 
         self.animation_timer += delta_time
-
-        if self.animation_timer >= ANIMATION_SPEED:
-            self.animation_timer -= ANIMATION_SPEED
+        
+        # This is the code that changes the current texture based
+        # on the animation timer. 
+        if self.animation_timer >= ENEMY_ANIMATION_SPEED:
+            self.animation_timer -= ENEMY_ANIMATION_SPEED
             self.cur_texture += 1
-            if self.cur_texture > 5:
+            if self.cur_texture > ENEMY_FRAME_COUNT-1:
                 self.cur_texture = 0
+        
+        # Setting the texture to the current texture number
+        # ranging from 0 to the amount of frames the enemy has
+        # -1. 
+        self.texture = self.idle_textures[self.cur_texture]
 
 class PlayerCharacter(Entity):
     """
@@ -289,8 +309,8 @@ class PlayerCharacter(Entity):
         # This controls the speed at which cur_texture changes 
         # however with a different speed for the sword.  
 
-        if self.animation_timer >= ANIMATION_SPEED:
-            self.animation_timer -= ANIMATION_SPEED
+        if self.animation_timer >= PLAYER_ANIMATION_SPEED:
+            self.animation_timer -= PLAYER_ANIMATION_SPEED
             self.cur_texture += 1
             if self.cur_texture > PLAYER_FRAME_COUNT - 1:
                 self.cur_texture = 0
@@ -351,7 +371,7 @@ class MainMenu(arcade.View):
             SCREEN_WIDTH/2,
             SCREEN_HEIGHT-200,
             arcade.csscolor.WHITE,
-            70,
+            TITLE_SIZE,
             anchor_x="center",
             font_name=("Kenney Pixel Square"),
         )
@@ -363,13 +383,13 @@ class MainMenu(arcade.View):
             SCREEN_WIDTH/2,
             SCREEN_HEIGHT-260,
             arcade.csscolor.WHITE,
-            20,
+            SUBHEADING_SIZE,
             anchor_x="center",
             font_name=("Arial"),
         )
         
         # Set background color.
-        arcade.set_background_color(arcade.color.BLAST_OFF_BRONZE)
+        arcade.set_background_color(MENU_BACKGROUND_COLOR)
 
         # Create a vertical BoxGroup to align buttons.
         self.v_box = arcade.gui.UIBoxLayout()
@@ -417,7 +437,7 @@ class EndMenu(arcade.View):
         self.manager.enable()
         
         # Setting the backgrond colour of the end menu. 
-        arcade.set_background_color(arcade.color.DARK_GREEN)
+        arcade.set_background_color(GAME_BACKGROUND_COLOR)
         
         # Create a vertical BoxGroup to align buttons.
         self.v_box = arcade.gui.UIBoxLayout()
@@ -428,7 +448,8 @@ class EndMenu(arcade.View):
             SCREEN_WIDTH/2,
             SCREEN_HEIGHT - 150,
             arcade.csscolor.WHITE,
-            18,
+            SUBHEADING_SIZE,
+            font_name= "Kenney Pixel Square",
             anchor_x= "center",
             
         )
@@ -475,7 +496,7 @@ class GameView(arcade.View):
         # Checking if the player is able to shoot.
         self.can_shoot = False
         
-        # Separate variable that holds the player sprite.
+        # Separate variable that holds the player and enemy sprite.
         self.player_sprite = PlayerCharacter(self)
         self.enemy_sprite = EnemyCharacter()
         
@@ -567,7 +588,7 @@ arcade.load_sound("assets/sound/orb_collect.mp3")
             SCREEN_WIDTH-140,
             SCREEN_HEIGHT-30,
             arcade.csscolor.BLACK,
-            18,
+            GUI_TEXT_SIZE,
             font_name=("Kenney Mini Square"),
             
         )
@@ -577,7 +598,7 @@ arcade.load_sound("assets/sound/orb_collect.mp3")
             SCREEN_WIDTH-135,
             SCREEN_HEIGHT-50,
             arcade.csscolor.BLACK,
-            18,
+            GUI_TEXT_SIZE,
             font_name=("Kenney Mini Square"),
             
         )
@@ -587,7 +608,7 @@ arcade.load_sound("assets/sound/orb_collect.mp3")
             SCREEN_WIDTH-225,
             SCREEN_HEIGHT-70,
             arcade.csscolor.WHITE,
-            18,
+            GUI_TEXT_SIZE,
             font_name=("Kenney Mini Square"),
         )
         
@@ -596,7 +617,7 @@ arcade.load_sound("assets/sound/orb_collect.mp3")
             10,
             SCREEN_HEIGHT - 30,
             arcade.csscolor.BLACK,
-            18,
+            GUI_TEXT_SIZE,
             font_name=("Kenney Mini Square"),
         )
         
@@ -604,10 +625,7 @@ arcade.load_sound("assets/sound/orb_collect.mp3")
         
         # Setting the background color of the game to match 
         # the background color of the game.
-        arcade.set_background_color(BACKGROUND_COLOR)
-
-
-############################### COMMENT FROM HERE
+        arcade.set_background_color(GAME_BACKGROUND_COLOR)
 
     def setup(self):
         """Set up the game here. Calling this method
@@ -680,14 +698,12 @@ arcade.load_sound("assets/sound/orb_collect.mp3")
         if self.enemy_spawn == True:
             # Adding the enemy sprite to the scene.
             self.scene.add_sprite(LAYER_NAME_ENEMIES, self.enemy_sprite)
+            self.enemy_sprite.alpha = ENEMY_SPRITE_ALPHA
             # Setting the enemy sprite's starting position.
             self.enemy_sprite.center_x = ENEMY_START_X
             self.enemy_sprite.center_y = ENEMY_START_Y
             
-        
-        
-        
-            
+    
         # Shooting mechanics, checking if player can shoot, 
         # shoot timer, shoot_available. 
         self.shoot_available = False
@@ -723,7 +739,7 @@ arcade.load_sound("assets/sound/orb_collect.mp3")
         self.camera.use()
 
         # Drawing the scene. 
-        self.scene.draw()
+        self.scene.draw(pixelated = True)
         
         # Activating the GUI camera (keeps text on the window).
         self.gui_camera.use()
