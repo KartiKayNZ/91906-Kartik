@@ -14,9 +14,17 @@ SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 SCREEN_TITLE = "Heart Soldiers"
 
-# Map borders.
+# Map borders and border movement constants.
 MAP_X_BORDER = 2550
 MAP_Y_BORDER = 1425
+BORDER_BOUNCE_X = -5
+FLOOR_BOUNCE_X = 5
+BORDER_BOUNCE_Y = -5
+ROOF_BOUNCE_Y = 5
+
+# Background color
+
+BACKGROUND_COLOR = (234, 165, 108)
 
 # Level constants.
 LEVEL_1 = 1
@@ -145,8 +153,8 @@ class Entity(arcade.Sprite):
         
         
 class EnemyCharacter(Entity):
-    ''' This is the enemy code. This code inherits from the Entity class.
-    and '''
+    ''' This is the enemy code. This code inherits 
+    from the Entity class.'''
     def __init__(self):
 
         # Setup parent class.
@@ -216,15 +224,19 @@ class PlayerCharacter(Entity):
         
         # Load idle, walk and sword textures.
         main_path = "assets/player_sprites/player_"
-        self.idle_textures = load_texture_dict(f"{main_path}idle", PLAYER_FRAME_COUNT, DIRECTIONS)
-        self.walk_textures = load_texture_dict(f"{main_path}walk", PLAYER_FRAME_COUNT, DIRECTIONS)
-        self.sword_textures = load_texture_dict(f"{main_path}swing", PLAYER_FRAME_COUNT, DIRECTIONS)
+        self.idle_textures = load_texture_dict\
+(f"{main_path}idle", PLAYER_FRAME_COUNT, DIRECTIONS)
+        self.walk_textures = load_texture_dict\
+(f"{main_path}walk", PLAYER_FRAME_COUNT, DIRECTIONS)
+        self.sword_textures = load_texture_dict\
+(f"{main_path}swing", PLAYER_FRAME_COUNT, DIRECTIONS)
         
         # Set the initial texture.
         self.texture = self.idle_textures[self.direction][self.cur_texture]
         
         # The sword animation cycle in order to isolate the sword
-        # textures to not combine them with the cycle of idle and walking.
+        # textures to not combine them with the
+        # cycle of idle and walking.
         self.sword_animation_cycle = cycle([0, 1, 2, 3, 4, 5])
         
     def update_animation(self, delta_time: float = 1 / 60):
@@ -315,7 +327,7 @@ class StartButton(arcade.gui.UIFlatButton):
         # Game_view.setup() just runs the setup of the GameView() .
         game_view.setup()
         
-        # And then this window just changes the view to the actual game. 
+        # And then this window just changes the view to the game.
         window.show_view(game_view)
         
 class MainMenu(arcade.View):
@@ -536,12 +548,16 @@ class GameView(arcade.View):
         
         # Loading all the sounds required in the game.
         self.shoot_sound = arcade.load_sound("assets/sound/shoot.mp3")
-        self.hit_sound = arcade.load_sound("assets/sound/hurt.wav")
+        self.hit_sound = arcade.load_sound("assets/sound/hit.wav")
         self.heal_sound = arcade.load_sound("assets/sound/heal.wav")
-        self.level_complete_sound = arcade.load_sound("assets/sound/level_complete.wav")
-        self.sword_collected_sound = arcade.load_sound("assets/sound/sword_pickup.mp3")
+        self.level_complete_sound = \
+arcade.load_sound("assets/sound/level_complete.wav")
+        self.sword_collected_sound = \
+arcade.load_sound("assets/sound/sword_pickup.mp3")
         self.teleport_sound = arcade.load_sound("assets/sound/teleport.mp3")
-        self.orbs_collect_sound = arcade.load_sound("assets/sound/orb_collect.mp3")
+        self.orbs_collect_sound = \
+arcade.load_sound("assets/sound/orb_collect.mp3")
+        self.hurt_sound = arcade.load_sound("assets/sound/hurt.wav")
 
         
         # These text labels are used to display the player's 
@@ -588,7 +604,7 @@ class GameView(arcade.View):
         
         # Setting the background color of the game to match 
         # the background color of the game.
-        arcade.set_background_color((234, 165, 108))
+        arcade.set_background_color(BACKGROUND_COLOR)
 
 
 ############################### COMMENT FROM HERE
@@ -725,11 +741,13 @@ class GameView(arcade.View):
         key pressed. W is for up, A is for left, S is for down,
         and D is for right, or arrow keys. '''
 
-        self.player_sprite.change_x = (PLAYER_MOVEMENT_SPEED if self.right_pressed else 0) or (
+        self.player_sprite.change_x = (PLAYER_MOVEMENT_SPEED if\
+self.right_pressed else 0) or (
             -PLAYER_MOVEMENT_SPEED if self.left_pressed else 0
         )
 
-        self.player_sprite.change_y = (PLAYER_MOVEMENT_SPEED if self.up_pressed else 0) or (
+        self.player_sprite.change_y = (PLAYER_MOVEMENT_SPEED if\
+self.up_pressed else 0) or (
             -PLAYER_MOVEMENT_SPEED if self.down_pressed else 0
         )
 
@@ -825,9 +843,11 @@ class GameView(arcade.View):
             LAYER_NAME_SWORD: self.scene[LAYER_NAME_SWORD]
         }
 
-        # Loop through each sprite list and check for collisions with the player sprite
+        # Loop through each sprite list and check for 
+        # collisions with the player sprite
         for layer_name, sprite_list in sprite_lists.items():
-            hit_list = arcade.check_for_collision_with_list(self.player_sprite, sprite_list)
+            hit_list = arcade.check_for_collision_with_list\
+(self.player_sprite, sprite_list)
             # Perform actions based on the type of sprite collided with
             if layer_name == LAYER_NAME_HEALTH_POT:
                 for pot in hit_list:
@@ -899,6 +919,7 @@ arcade.check_for_collision(self.player_sprite, self.enemy_sprite)
             # but if the player does not have shield, the player's 
             # health will be deducted.
             if enemy_collision == True:  
+                arcade.play_sound(self.hurt_sound)
                 if self.player_shield <= 0:
                     self.player_sprite.health -= self.enemy_attack
                 else:
@@ -1049,14 +1070,14 @@ f"Enemy Health: {self.enemy_sprite.health}"
         # Boundary code to prevent the palyer from going out of the
         # map borders.
         if self.player_sprite.center_x > MAP_X_BORDER:
-            self.player_sprite.change_x = -5
+            self.player_sprite.change_x = BORDER_BOUNCE_X
         elif self.player_sprite.center_x < 0:
-            self.player_sprite.change_x = 5
+            self.player_sprite.change_x =  FLOOR_BOUNCE_X
             
         if self.player_sprite.center_y > MAP_Y_BORDER:
-            self.player_sprite.change_y = -5
+            self.player_sprite.change_y = BORDER_BOUNCE_Y
         elif self.player_sprite.center_y < 0:
-            self.player_sprite.change_y = 5
+            self.player_sprite.change_y = ROOF_BOUNCE_Y
 
         # If the level is complete this will run.
         if self.level_complete == True:
@@ -1107,10 +1128,6 @@ f"Enemy Health: {self.enemy_sprite.health}"
                 self.setup()
                 self.portal_enter = False
 
-        
-            
-                
-            
             
 def main():
     """Main method that runs the entire program."""
@@ -1124,8 +1141,5 @@ def main():
 
 
 if __name__ == "__main__":
-    ''' This funtion allows for other scripts to be impported as a 
-    module while also allowing for a standalone execution of the
-    main function.'''
     # Running the entire program. 
     main()

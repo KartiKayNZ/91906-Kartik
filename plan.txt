@@ -44,7 +44,7 @@ New new to do lists
 check mark schedule
 fix portal and ghost animations
 add more testing
-delete unused code
+-delete unused code
 -change sound effects
 record vid of you playing the game
 -fix file structure
